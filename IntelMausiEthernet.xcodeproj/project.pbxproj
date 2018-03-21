@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CEA1F0FE206305B000B7BD6F /* libkmod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA1F0FD206305B000B7BD6F /* libkmod.a */; };
 		D36B90EE1C41CA4200C1EB37 /* ich8lan.c in Sources */ = {isa = PBXBuildFile; fileRef = D36B90DA1C41BF0B00C1EB37 /* ich8lan.c */; };
 		D36B90F51C41CA5200C1EB37 /* mac.c in Sources */ = {isa = PBXBuildFile; fileRef = D36B90DC1C41BF0B00C1EB37 /* mac.c */; };
 		D36B90F91C41CA7D00C1EB37 /* manage.c in Sources */ = {isa = PBXBuildFile; fileRef = D36B90DE1C41BF0B00C1EB37 /* manage.c */; };
@@ -29,6 +30,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CEA1F0FD206305B000B7BD6F /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkmod.a; path = IntelMausiEthernet/libkmod.a; sourceTree = "<group>"; };
 		D31D52021A566D8000DD1F17 /* IntelMausiSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntelMausiSetup.cpp; sourceTree = "<group>"; };
 		D31D52061A566F4800DD1F17 /* IntelMausiHardware.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntelMausiHardware.cpp; sourceTree = "<group>"; };
 		D36B90D61C41BF0B00C1EB37 /* defines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = defines.h; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEA1F0FE206305B000B7BD6F /* libkmod.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,6 +130,7 @@
 		D3CB5B781A4394A800A37FAA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CEA1F0FD206305B000B7BD6F /* libkmod.a */,
 				D3CB5B791A4394A800A37FAA /* Other Frameworks */,
 			);
 			name = Frameworks;
@@ -419,6 +423,11 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "IntelMausiEthernet/IntelMausiEthernetV2-Prefix.pch";
 				INFOPLIST_FILE = "IntelMausiEthernet/IntelMausiEthernet-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/IntelMausiEthernet",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				MODULE_NAME = com.insanelymac.IntelMausiEthernet;
 				MODULE_VERSION = 2.5.0d0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.insanelymac.${PRODUCT_NAME:rfc1034identifier}";
@@ -444,6 +453,11 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "IntelMausiEthernet/IntelMausiEthernetV2-Prefix.pch";
 				INFOPLIST_FILE = "IntelMausiEthernet/IntelMausiEthernet-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/IntelMausiEthernet",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				MODULE_NAME = com.insanelymac.IntelMausiEthernet;
 				MODULE_VERSION = 2.5.0d0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.insanelymac.${PRODUCT_NAME:rfc1034identifier}";

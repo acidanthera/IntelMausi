@@ -238,7 +238,7 @@ enum {
 #ifdef KERNEL
 #ifdef __cplusplus
 
-#include <IOKit/IOService.h>
+#include "LegacyIOService.h"
 #include <IOKit/IOWorkLoop.h>
 #include <IOKit/network/IONetworkInterface.h>
 #include <IOKit/network/IOKernelDebugger.h>

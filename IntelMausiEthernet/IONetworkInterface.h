@@ -175,7 +175,7 @@ enum {
 #ifdef KERNEL
 #ifdef __cplusplus
 
-#include <IOKit/IOService.h>
+#include "LegacyIOService.h"
 #include <IOKit/network/IONetworkData.h>
 #include <IOKit/network/IONetworkStats.h>
 #include <IOKit/network/IONetworkMedium.h>

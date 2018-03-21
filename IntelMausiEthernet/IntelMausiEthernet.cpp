@@ -1154,7 +1154,7 @@ done:
 UInt32 IntelMausi::rxInterrupt(IONetworkInterface *interface, uint32_t maxCount, IOMbufQueue *pollQueue, void *context)
 {
     IOPhysicalSegment rxSegment;
-    union e1000_rx_desc_extended *desc = &rxDescArray[rxNextDescIndex];
+    union e1000_rx_desc_extended *desc;
     mbuf_t bufPkt, newPkt;
     UInt64 addr;
     UInt32 status;
@@ -1163,7 +1163,12 @@ UInt32 IntelMausi::rxInterrupt(IONetworkInterface *interface, uint32_t maxCount,
     UInt32 n;
     UInt16 vlanTag;
     bool replaced;
-    
+
+    if (rxDescArray == NULL)
+        return 0;
+
+    desc = &rxDescArray[rxNextDescIndex];
+
     while (((status = OSSwapLittleToHostInt32(desc->wb.upper.status_error)) & E1000_RXD_STAT_DD) && (goodPkts < maxCount)) {
         addr = rxBufArray[rxNextDescIndex].phyAddr;
         bufPkt = rxBufArray[rxNextDescIndex].mbuf;

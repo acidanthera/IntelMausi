@@ -387,6 +387,7 @@ error7:
     
 error6:
     rxBufDesc->release();
+    rxDescArray = NULL;
     rxBufDesc = NULL;
     
 error5:
@@ -427,6 +428,7 @@ void IntelMausi::freeDMADescriptors()
     if (rxBufDesc) {
         rxBufDesc->complete();
         rxBufDesc->release();
+        rxDescArray = NULL;
         rxBufDesc = NULL;
         rxPhyAddr = NULL;
     }

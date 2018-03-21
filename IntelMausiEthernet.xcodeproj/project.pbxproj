@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CEA1F0FE206305B000B7BD6F /* libkmod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA1F0FD206305B000B7BD6F /* libkmod.a */; };
+		CEA1F1002063082300B7BD6F /* IOEthernetController.h in Headers */ = {isa = PBXBuildFile; fileRef = CEA1F0FF2063082300B7BD6F /* IOEthernetController.h */; };
 		D36B90EE1C41CA4200C1EB37 /* ich8lan.c in Sources */ = {isa = PBXBuildFile; fileRef = D36B90DA1C41BF0B00C1EB37 /* ich8lan.c */; };
 		D36B90F51C41CA5200C1EB37 /* mac.c in Sources */ = {isa = PBXBuildFile; fileRef = D36B90DC1C41BF0B00C1EB37 /* mac.c */; };
 		D36B90F91C41CA7D00C1EB37 /* manage.c in Sources */ = {isa = PBXBuildFile; fileRef = D36B90DE1C41BF0B00C1EB37 /* manage.c */; };
@@ -31,6 +32,7 @@
 
 /* Begin PBXFileReference section */
 		CEA1F0FD206305B000B7BD6F /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkmod.a; path = IntelMausiEthernet/libkmod.a; sourceTree = "<group>"; };
+		CEA1F0FF2063082300B7BD6F /* IOEthernetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOEthernetController.h; sourceTree = "<group>"; };
 		D31D52021A566D8000DD1F17 /* IntelMausiSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntelMausiSetup.cpp; sourceTree = "<group>"; };
 		D31D52061A566F4800DD1F17 /* IntelMausiHardware.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntelMausiHardware.cpp; sourceTree = "<group>"; };
 		D36B90D61C41BF0B00C1EB37 /* defines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = defines.h; sourceTree = "<group>"; };
@@ -191,6 +193,7 @@
 			isa = PBXGroup;
 			children = (
 				D3F318C61AB3B57D00DA9D9A /* IONetworkController.h */,
+				CEA1F0FF2063082300B7BD6F /* IOEthernetController.h */,
 				D3F318C71AB3B57D00DA9D9A /* IONetworkInterface.h */,
 			);
 			name = "Apple Headers";
@@ -206,6 +209,7 @@
 				D3F318AB1AB3B0E300DA9D9A /* mii.h in Headers */,
 				D3F318B11AB3B0E300DA9D9A /* if_ether.h in Headers */,
 				D3F318B21AB3B0E300DA9D9A /* mdio.h in Headers */,
+				CEA1F1002063082300B7BD6F /* IOEthernetController.h in Headers */,
 				D3F318B31AB3B0E300DA9D9A /* uapi-mii.h in Headers */,
 				D3F318B41AB3B0E300DA9D9A /* ethtool.h in Headers */,
 				D3F318B51AB3B0E300DA9D9A /* linux.h in Headers */,

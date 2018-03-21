@@ -43,7 +43,7 @@ typedef u_int32_t ifnet_ctl_cmd_t;
 #include <IOKit/IOLocks.h>
 #include <IOKit/IOTimerEventSource.h>
 #include <IOKit/IOTypes.h>
-#include <IOKit/network/IOEthernetController.h>
+#include "IOEthernetController.h"
 #include <IOKit/network/IOEthernetInterface.h>
 #include <IOKit/network/IOBasicOutputQueue.h>
 #include <IOKit/pci/IOPCIDevice.h>

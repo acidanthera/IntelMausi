@@ -471,9 +471,11 @@ void IntelMausi::clearDescriptors()
      * we must restore them in order to make sure that we leave the ring in
      * a usable state.
      */
-    for (i = 0; i < kNumRxDesc; i++) {
-        rxDescArray[i].read.buffer_addr = OSSwapHostToLittleInt64(rxBufArray[i].phyAddr);
-        rxDescArray[i].read.reserved = 0;
+    if (rxDescArray) {
+        for (i = 0; i < kNumRxDesc; i++) {
+            rxDescArray[i].read.buffer_addr = OSSwapHostToLittleInt64(rxBufArray[i].phyAddr);
+            rxDescArray[i].read.reserved = 0;
+        }
     }
     rxCleanedCount = rxNextDescIndex = 0;
 

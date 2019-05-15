@@ -1563,7 +1563,11 @@ void IntelMausi::setLinkUp()
 
     /* Start output thread, statistics update and watchdog. */
     netif->startOutputThread();
-    IOLog("Ethernet [IntelMausi]: Link up on en%u, %s, %s, %s%s\n", netif->getUnitNumber(), speedName, duplexName, flowName, eeeName);
+    DebugLog("Ethernet [IntelMausi]: Link up on en%u, %s, %s, %s%s\n", netif->getUnitNumber(), speedName, duplexName, flowName, eeeName);
+    (void)flowName;
+    (void)eeeName;
+    (void)speedName;
+    (void)duplexName;
 
     if (chipType >= board_pch_lpt)
         setMaxLatency(adapterData.link_speed);
@@ -1615,7 +1619,7 @@ void IntelMausi::setLinkDown()
     clear_bit(__E1000_DOWN, &adapterData.state);
 	intelEnableIRQ(intrMask);
 
-    IOLog("Ethernet [IntelMausi]: Link down on en%u\n", netif->getUnitNumber());
+    DebugLog("Ethernet [IntelMausi]: Link down on en%u\n", netif->getUnitNumber());
 }
 
 inline void IntelMausi::intelGetChecksumResult(mbuf_t m, UInt32 status)
@@ -1838,7 +1842,7 @@ bool IntelMausi::intelStart()
     if ((hw->mac.type == e1000_pch_lpt) || (hw->mac.type == e1000_pch_spt)) {
         intrMask |= E1000_IMS_ECCER;
     }
-    IOLog("Ethernet [IntelMausi]: %s (Rev. %u), %02x:%02x:%02x:%02x:%02x:%02x\n",
+    DebugLog("Ethernet [IntelMausi]: %s (Rev. %u), %02x:%02x:%02x:%02x:%02x:%02x\n",
           deviceTable[chip].deviceName, pciDeviceData.revision,
           mac->addr[0], mac->addr[1], mac->addr[2], mac->addr[3], mac->addr[4], mac->addr[5]);
     result = true;
@@ -1982,10 +1986,10 @@ bool IntelMausi::checkForDeadlock()
         if (++deadlockWarn >= kTxDeadlockTreshhold) {
             mbuf_t m = txBufArray[txDirtyIndex].mbuf;
             UInt32 pktSize;
-            UInt16 index;
-            
+
 #ifdef DEBUG
-            UInt16 i;
+            UInt16 index;
+			UInt16 i;
             UInt16 stalledIndex = txDirtyIndex;
 #endif
             //UInt8 data;
@@ -2075,7 +2079,7 @@ static inline void prepareTSO6(mbuf_t m, UInt32 *mssHeaderSize, UInt32 *payloadS
 {
     struct ip6_hdr *ip6Hdr = (struct ip6_hdr *)((UInt8 *)mbuf_data(m) + ETHER_HDR_LEN);
     struct tcphdr *tcpHdr = (struct tcphdr *)((UInt8 *)ip6Hdr + sizeof(struct ip6_hdr));
-    UInt16 *addr = (UInt16 *)&ip6Hdr->ip6_src;
+    UInt8  *addr = (UInt8 *)&ip6Hdr->ip6_src;
     UInt32 csum32 = 6;
     UInt32 plen = (UInt32)mbuf_pkthdr_len(m);
     UInt32 hlen = (tcpHdr->th_off << 2) + kMinL4HdrOffsetV6;
@@ -2083,8 +2087,10 @@ static inline void prepareTSO6(mbuf_t m, UInt32 *mssHeaderSize, UInt32 *payloadS
     
     ip6Hdr->ip6_ctlun.ip6_un1.ip6_un1_plen = 0;
 
-    for (i = 0; i < 16; i++)
-        csum32 += ntohs(*addr++);
+    for (i = 0; i < 16; i++) {
+        csum32 += ((UInt16)addr[0] << 8U) + addr[1];
+        addr += sizeof(UInt16);
+    }
     
     csum32 += (csum32 >> 16);
     tcpHdr->th_sum = htons((UInt16)csum32);

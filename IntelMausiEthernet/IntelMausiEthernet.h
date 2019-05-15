@@ -271,51 +271,51 @@ class IntelMausi : public super
 	
 public:
 	/* IOService (or its superclass) methods. */
-	virtual bool start(IOService *provider);
-	virtual void stop(IOService *provider);
-	virtual bool init(OSDictionary *properties);
-	virtual void free();
+	virtual bool start(IOService *provider) APPLE_KEXT_OVERRIDE;
+	virtual void stop(IOService *provider) APPLE_KEXT_OVERRIDE;
+	virtual bool init(OSDictionary *properties) APPLE_KEXT_OVERRIDE;
+	virtual void free() APPLE_KEXT_OVERRIDE;
 	
 	/* Power Management Support */
-	virtual IOReturn registerWithPolicyMaker(IOService *policyMaker);
-    virtual IOReturn setPowerState(unsigned long powerStateOrdinal, IOService *policyMaker );
-	virtual void systemWillShutdown(IOOptionBits specifier);
+	virtual IOReturn registerWithPolicyMaker(IOService *policyMaker) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn setPowerState(unsigned long powerStateOrdinal, IOService *policyMaker) APPLE_KEXT_OVERRIDE;
+	virtual void systemWillShutdown(IOOptionBits specifier) APPLE_KEXT_OVERRIDE;
     
 	/* IONetworkController methods. */
-	virtual IOReturn enable(IONetworkInterface *netif);
-	virtual IOReturn disable(IONetworkInterface *netif);
+	virtual IOReturn enable(IONetworkInterface *netif) APPLE_KEXT_OVERRIDE;
+	virtual IOReturn disable(IONetworkInterface *netif) APPLE_KEXT_OVERRIDE;
 	
-    virtual IOReturn outputStart(IONetworkInterface *interface, IOOptionBits options );
-    virtual IOReturn setInputPacketPollingEnable(IONetworkInterface *interface, bool enabled);
-    virtual void pollInputPackets(IONetworkInterface *interface, uint32_t maxCount, IOMbufQueue *pollQueue, void *context);
+    virtual IOReturn outputStart(IONetworkInterface *interface, IOOptionBits options) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn setInputPacketPollingEnable(IONetworkInterface *interface, bool enabled) APPLE_KEXT_OVERRIDE;
+    virtual void pollInputPackets(IONetworkInterface *interface, uint32_t maxCount, IOMbufQueue *pollQueue, void *context) APPLE_KEXT_OVERRIDE;
 	
-	virtual void getPacketBufferConstraints(IOPacketBufferConstraints *constraints) const;
+	virtual void getPacketBufferConstraints(IOPacketBufferConstraints *constraints) const APPLE_KEXT_OVERRIDE;
 	
-	virtual IOOutputQueue* createOutputQueue();
+	virtual IOOutputQueue* createOutputQueue() APPLE_KEXT_OVERRIDE;
 	
-	virtual const OSString* newVendorString() const;
-	virtual const OSString* newModelString() const;
+	virtual const OSString* newVendorString() const APPLE_KEXT_OVERRIDE;
+	virtual const OSString* newModelString() const APPLE_KEXT_OVERRIDE;
 	
-	virtual IOReturn selectMedium(const IONetworkMedium *medium);
-	virtual bool configureInterface(IONetworkInterface *interface);
+	virtual IOReturn selectMedium(const IONetworkMedium *medium) APPLE_KEXT_OVERRIDE;
+	virtual bool configureInterface(IONetworkInterface *interface) APPLE_KEXT_OVERRIDE;
 	
-	virtual bool createWorkLoop();
-	virtual IOWorkLoop* getWorkLoop() const;
+	virtual bool createWorkLoop() APPLE_KEXT_OVERRIDE;
+	virtual IOWorkLoop* getWorkLoop() const APPLE_KEXT_OVERRIDE;
 	
 	/* Methods inherited from IOEthernetController. */
-	virtual IOReturn getHardwareAddress(IOEthernetAddress *addr);
-	virtual IOReturn setHardwareAddress(const IOEthernetAddress *addr);
-	virtual IOReturn setPromiscuousMode(bool active);
-	virtual IOReturn setMulticastMode(bool active);
-	virtual IOReturn setMulticastList(IOEthernetAddress *addrs, UInt32 count);
-	virtual IOReturn getChecksumSupport(UInt32 *checksumMask, UInt32 checksumFamily, bool isOutput);
-	virtual IOReturn getMinPacketSize(UInt32 *minSize) const;
-    virtual IOReturn setWakeOnMagicPacket(bool active);
-    virtual IOReturn getPacketFilters(const OSSymbol *group, UInt32 *filters) const;
+	virtual IOReturn getHardwareAddress(IOEthernetAddress *addr) APPLE_KEXT_OVERRIDE;
+	virtual IOReturn setHardwareAddress(const IOEthernetAddress *addr) APPLE_KEXT_OVERRIDE;
+	virtual IOReturn setPromiscuousMode(bool active) APPLE_KEXT_OVERRIDE;
+	virtual IOReturn setMulticastMode(bool active) APPLE_KEXT_OVERRIDE;
+	virtual IOReturn setMulticastList(IOEthernetAddress *addrs, UInt32 count) APPLE_KEXT_OVERRIDE;
+	virtual IOReturn getChecksumSupport(UInt32 *checksumMask, UInt32 checksumFamily, bool isOutput) APPLE_KEXT_OVERRIDE;
+	virtual IOReturn getMinPacketSize(UInt32 *minSize) const APPLE_KEXT_OVERRIDE;
+    virtual IOReturn setWakeOnMagicPacket(bool active) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn getPacketFilters(const OSSymbol *group, UInt32 *filters) const APPLE_KEXT_OVERRIDE;
     
-    virtual UInt32 getFeatures() const;
-    virtual IOReturn getMaxPacketSize(UInt32 * maxSize) const;
-    virtual IOReturn setMaxPacketSize(UInt32 maxSize);
+    virtual UInt32 getFeatures() const APPLE_KEXT_OVERRIDE;
+    virtual IOReturn getMaxPacketSize(UInt32 * maxSize) const APPLE_KEXT_OVERRIDE;
+    virtual IOReturn setMaxPacketSize(UInt32 maxSize) APPLE_KEXT_OVERRIDE;
 
 private:
     bool initPCIConfigSpace(IOPCIDevice *provider);

@@ -53,8 +53,10 @@ static UInt32 mediumSpeedArray[MEDIUM_INDEX_COUNT] = {
     100 * MBit
 };
 
+#ifdef DEBUG
 static const char *onName = "enabled";
 static const char *offName = "disabled";
+#endif
 
 #pragma mark --- data structure initialization methods ---
 
@@ -70,17 +72,17 @@ void IntelMausi::getParams()
     tso4 = OSDynamicCast(OSBoolean, getProperty(kEnableTSO4Name));
     enableTSO4 = (tso4) ? tso4->getValue() : false;
     
-    IOLog("Ethernet [IntelMausi]: TCP/IPv4 segmentation offload %s.\n", enableTSO4 ? onName : offName);
+    DebugLog("Ethernet [IntelMausi]: TCP/IPv4 segmentation offload %s.\n", enableTSO4 ? onName : offName);
     
     tso6 = OSDynamicCast(OSBoolean, getProperty(kEnableTSO6Name));
     enableTSO6 = (tso6) ? tso6->getValue() : false;
     
-    IOLog("Ethernet [IntelMausi]: TCP/IPv6 segmentation offload %s.\n", enableTSO6 ? onName : offName);
+    DebugLog("Ethernet [IntelMausi]: TCP/IPv6 segmentation offload %s.\n", enableTSO6 ? onName : offName);
     
     csoV6 = OSDynamicCast(OSBoolean, getProperty(kEnableCSO6Name));
     enableCSO6 = (csoV6) ? csoV6->getValue() : false;
     
-    IOLog("Ethernet [IntelMausi]: TCP/IPv6 checksum offload %s.\n", enableCSO6 ? onName : offName);
+    DebugLog("Ethernet [IntelMausi]: TCP/IPv6 checksum offload %s.\n", enableCSO6 ? onName : offName);
     
     intrRate = OSDynamicCast(OSNumber, getProperty(kIntrRateName));
     newIntrRate = 5000;
@@ -98,9 +100,9 @@ void IntelMausi::getParams()
     intrThrValue = (3906250 / (newIntrRate + 1));
     
     if (versionString)
-        IOLog("Ethernet [IntelMausi]: Version %s using max interrupt rate %u. Please don't support tonymacx86.com!\n", versionString->getCStringNoCopy(), newIntrRate);
+        DebugLog("Ethernet [IntelMausi]: Version %s using max interrupt rate %u.\n", versionString->getCStringNoCopy(), newIntrRate);
     else
-        IOLog("Ethernet [IntelMausi]: Using max interrupt rate %u. Please don't support tonymacx86.com!\n", newIntrRate);
+        DebugLog("Ethernet [IntelMausi]: Using max interrupt rate %u.\n", newIntrRate);
 
     DebugLog("Ethernet [IntelMausi]: intrThrValue=%u\n", intrThrValue);
 }

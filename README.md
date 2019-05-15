@@ -1,5 +1,6 @@
 # IntelMausiEthernet
-OS X driver for Intel onboard LAN
+
+Intel onboard LAN driver for macOS. Courtesy of [Laura Müller](https://github.com/Mieze), refer to [original repository](https://github.com/Mieze/IntelMausiEthernet) for more details. This copy includes alteration that are of concern in [Acidanthera](https://github.com/acidanthera). Do use the original version when uncertain. No support or troubleshooting provided.
 
 A few days before Christmas I started my latest project, a new driver for recent Intel onboard LAN controllers. My intention was not to replace hnak's AppleIntelE1000e.kext completely but to deliver best performance and stability on recent hardware. That's why I dropped support for a number of older NICs. Currently the driver supports:
  

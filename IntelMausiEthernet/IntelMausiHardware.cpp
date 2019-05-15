@@ -93,7 +93,9 @@ error:
 
 void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000_info *ei)
 {
+#ifdef DEBUG
     UInt32 pcieLinkCap;
+#endif
     UInt16 pcieLinkCtl;
     UInt16 aspmDisable;
     UInt16 pmCap;
@@ -116,7 +118,9 @@ void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000
     
     /* Get PCIe link information. */
     if (provider->findPCICapability(kIOPCIPCIExpressCapability, &pcieCapOffset)) {
+#ifdef DEBUG
         pcieLinkCap = provider->extendedConfigRead32(pcieCapOffset + kIOPCIELinkCapability);
+#endif
         pcieLinkCtl = provider->extendedConfigRead16(pcieCapOffset + kIOPCIELinkControl);
         DebugLog("Ethernet [IntelMausi]: PCIe link capabilities: 0x%08x, link control: 0x%04x.\n", pcieLinkCap, pcieLinkCtl);
         aspmDisable = 0;
@@ -369,6 +373,7 @@ void IntelMausi::intelDisable()
                 
                 retval = e1e_wphy_locked(hw, I82579_LPI_CTRL,
                                          lpi_ctrl);
+                (void)retval;
             }
         }
         hw->phy.ops.release(hw);
@@ -377,7 +382,7 @@ void IntelMausi::intelDisable()
     if (linkUp) {
         linkUp = false;
         setLinkStatus(linkStatus);
-        IOLog("Ethernet [IntelMausi]: Link down on en%u\n", netif->getUnitNumber());
+        DebugLog("Ethernet [IntelMausi]: Link down on en%u\n", netif->getUnitNumber());
     }
 }
 
@@ -1092,7 +1097,7 @@ void IntelMausi::intelRestart()
 
     /*  Also set the link status to down. */
     if (linkUp)
-        IOLog("Ethernet [IntelMausi]: Link down on en%u\n", netif->getUnitNumber());
+        DebugLog("Ethernet [IntelMausi]: Link down on en%u\n", netif->getUnitNumber());
 
     setLinkStatus(kIONetworkLinkValid);
     linkUp = false;
@@ -1591,16 +1596,22 @@ void IntelMausi::intelSetupAdvForMedium(const IONetworkMedium *medium)
 void IntelMausi::intelFlushLPIC()
 {
     struct e1000_hw *hw = &adapterData.hw;
-    UInt32 error, lpic;
+    UInt32 error;
+
+#ifdef DEBUG
+    UInt32 lpic;
+#endif
     
     /* Flush LPIC. */
     error = hw->phy.ops.acquire(hw);
     
     if (error)
         return;
-    
+
+#ifdef DEBUG
     lpic = intelReadMem32(E1000_LPIC);
     DebugLog("Ethernet [IntelMausi]: LPIC=0x%08x.\n", lpic);
+#endif
 
     hw->phy.ops.release(hw);
 }

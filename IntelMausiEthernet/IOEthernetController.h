@@ -142,7 +142,7 @@ public:
     @result Returns true on success, false otherwise. 
 */ 
 
-    virtual bool init(OSDictionary * properties);
+    virtual bool init(OSDictionary * properties) APPLE_KEXT_OVERRIDE;
 
 /*! @function getPacketFilters
     @abstract Gets the set of packet filters supported by the Ethernet 
@@ -165,7 +165,7 @@ public:
 */
 
     virtual IOReturn getPacketFilters(const OSSymbol * group,
-                                      UInt32 *         filters) const;
+                                      UInt32 *         filters) const APPLE_KEXT_OVERRIDE;
 
 /*! @function enablePacketFilter
     @abstract Enables one of the supported packet filters from the
@@ -193,7 +193,7 @@ public:
     virtual IOReturn enablePacketFilter(const OSSymbol * group,
                                         UInt32           aFilter,
                                         UInt32           enabledFilters,
-                                        IOOptionBits     options = 0);
+                                        IOOptionBits     options = 0) APPLE_KEXT_OVERRIDE;
 
 /*! @function disablePacketFilter
     @abstract Disables a packet filter that is currently enabled from the
@@ -221,7 +221,7 @@ public:
     virtual IOReturn disablePacketFilter(const OSSymbol * group,
                                          UInt32           aFilter,
                                          UInt32           enabledFilters,
-                                         IOOptionBits     options = 0);
+                                         IOOptionBits     options = 0) APPLE_KEXT_OVERRIDE;
 
 /*! @function getHardwareAddress
     @abstract Gets the Ethernet controller's station address.
@@ -238,7 +238,7 @@ public:
 */
 
     virtual IOReturn getHardwareAddress(void *   addr,
-                                        UInt32 * inOutAddrBytes);
+                                        UInt32 * inOutAddrBytes) APPLE_KEXT_OVERRIDE;
 
 /*! @function setHardwareAddress
     @abstract Sets or changes the station address used by the Ethernet
@@ -255,7 +255,7 @@ public:
 */
 
     virtual IOReturn setHardwareAddress(const void * addr,
-                                        UInt32       addrBytes);
+                                        UInt32       addrBytes) APPLE_KEXT_OVERRIDE;
 
 /*! @function getMaxPacketSize
     @abstract Gets the maximum packet size supported by the Ethernet
@@ -264,7 +264,7 @@ public:
     @result Returns kIOReturnSuccess on success, or an error code otherwise. 
 */
 
-    virtual IOReturn getMaxPacketSize(UInt32 * maxSize) const;
+    virtual IOReturn getMaxPacketSize(UInt32 * maxSize) const APPLE_KEXT_OVERRIDE;
 
 /*! @function getMinPacketSize
     @abstract Gets the minimum packet size supported by the Ethernet
@@ -273,7 +273,7 @@ public:
     @result Returns kIOReturnSuccess on success, or an error code otherwise. 
 */
 
-    virtual IOReturn getMinPacketSize(UInt32 * minSize) const;
+    virtual IOReturn getMinPacketSize(UInt32 * minSize) const APPLE_KEXT_OVERRIDE;
 
 /*! @function getPacketFilters
     @abstract Gets the set of packet filters supported by the Ethernet 
@@ -396,14 +396,14 @@ protected:
     @result Returns a newly allocated and initialized IOEthernetInterface object. 
 */
 
-    virtual IONetworkInterface * createInterface();
+    virtual IONetworkInterface * createInterface() APPLE_KEXT_OVERRIDE;
 
 /*! @function free
     @abstract Frees the IOEthernetController instance. 
     @discussion This method releases resources, and is
     then followed by a call to super::free(). */
 
-    virtual void free();
+    virtual void free() APPLE_KEXT_OVERRIDE;
 
 /*! @function publishProperties
     @abstract Publishes Ethernet controller properties and capabilities.
@@ -418,7 +418,7 @@ protected:
     since a property that a client relies upon may be missing. 
 */
 
-    virtual bool publishProperties();
+    virtual bool publishProperties() APPLE_KEXT_OVERRIDE;
 
     OSMetaClassDeclareReservedUsed( IOEthernetController,  0);
 

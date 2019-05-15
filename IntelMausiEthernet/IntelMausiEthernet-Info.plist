@@ -27,7 +27,7 @@
 		<key>IntelMausi</key>
 		<dict>
 			<key>CFBundleIdentifier</key>
-			<string>com.insanelymac.${PRODUCT_NAME:rfc1034identifier}</string>
+			<string>as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}</string>
 			<key>Driver_Version</key>
 			<string>$MODULE_VERSION</string>
 			<key>IOClass</key>

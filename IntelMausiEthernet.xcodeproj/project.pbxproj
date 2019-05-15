@@ -68,7 +68,7 @@
 		D3CB5B941A43969400A37FAA /* uapi-mii.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "uapi-mii.h"; sourceTree = "<group>"; };
 		D3CB5B951A43969400A37FAA /* uapi-ip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "uapi-ip.h"; sourceTree = "<group>"; };
 		D3CB5BCC1A43A18B00A37FAA /* uapi-pci_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "uapi-pci_regs.h"; sourceTree = "<group>"; };
-		D3F318C21AB3B0E300DA9D9A /* IntelMausiEthernet.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IntelMausiEthernet.kext; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3F318C21AB3B0E300DA9D9A /* IntelMausi.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IntelMausi.kext; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3F318C41AB3B14E00DA9D9A /* IntelMausiEthernetV2-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "IntelMausiEthernetV2-Prefix.pch"; sourceTree = "<group>"; };
 		D3F318C61AB3B57D00DA9D9A /* IONetworkController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IONetworkController.h; sourceTree = "<group>"; };
 		D3F318C71AB3B57D00DA9D9A /* IONetworkInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IONetworkInterface.h; sourceTree = "<group>"; };
@@ -125,7 +125,7 @@
 		D3CB5B771A4394A800A37FAA /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D3F318C21AB3B0E300DA9D9A /* IntelMausiEthernet.kext */,
+				D3F318C21AB3B0E300DA9D9A /* IntelMausi.kext */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -240,7 +240,7 @@
 			);
 			name = IntelMausiEthernet;
 			productName = IntelMausiEthernet;
-			productReference = D3F318C21AB3B0E300DA9D9A /* IntelMausiEthernet.kext */;
+			productReference = D3F318C21AB3B0E300DA9D9A /* IntelMausi.kext */;
 			productType = "com.apple.product-type.kernel-extension";
 		};
 /* End PBXNativeTarget section */
@@ -432,10 +432,10 @@
 					"$(PROJECT_DIR)/IntelMausiEthernet",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
-				MODULE_NAME = com.insanelymac.IntelMausiEthernet;
-				MODULE_VERSION = 2.5.0d0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.insanelymac.${PRODUCT_NAME:rfc1034identifier}";
-				PRODUCT_NAME = IntelMausiEthernet;
+				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
+				MODULE_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = IntelMausi;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = kext;
 			};
@@ -460,10 +460,10 @@
 					"$(PROJECT_DIR)/IntelMausiEthernet",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
-				MODULE_NAME = com.insanelymac.IntelMausiEthernet;
-				MODULE_VERSION = 2.5.0d0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.insanelymac.${PRODUCT_NAME:rfc1034identifier}";
-				PRODUCT_NAME = IntelMausiEthernet;
+				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
+				MODULE_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = IntelMausi;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = kext;
 			};

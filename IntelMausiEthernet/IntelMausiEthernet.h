@@ -282,9 +282,13 @@ public:
 	virtual void systemWillShutdown(IOOptionBits specifier) APPLE_KEXT_OVERRIDE;
     
 	/* IONetworkController methods. */
-	virtual IOReturn enable(IONetworkInterface *netif) APPLE_KEXT_OVERRIDE;
-	virtual IOReturn disable(IONetworkInterface *netif) APPLE_KEXT_OVERRIDE;
-	
+    virtual IOReturn enable(IONetworkInterface *netif) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn disable(IONetworkInterface *netif) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn enable(IOKernelDebugger *debugger) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn disable(IOKernelDebugger *debugger) APPLE_KEXT_OVERRIDE;
+
+    virtual void receivePacket(void *pkt, UInt32 *pktSizeOut, UInt32 timeout) APPLE_KEXT_OVERRIDE;
+    virtual void sendPacket(void *pkt, UInt32 pktSize) APPLE_KEXT_OVERRIDE;
     virtual IOReturn outputStart(IONetworkInterface *interface, IOOptionBits options) APPLE_KEXT_OVERRIDE;
     virtual IOReturn setInputPacketPollingEnable(IONetworkInterface *interface, bool enabled) APPLE_KEXT_OVERRIDE;
     virtual void pollInputPackets(IONetworkInterface *interface, uint32_t maxCount, IOMbufQueue *pollQueue, void *context) APPLE_KEXT_OVERRIDE;
@@ -318,6 +322,8 @@ public:
     virtual IOReturn setMaxPacketSize(UInt32 maxSize) APPLE_KEXT_OVERRIDE;
 
 private:
+    IOReturn driverEnable();
+    IOReturn driverDisable();
     bool initPCIConfigSpace(IOPCIDevice *provider);
     void initPCIPowerManagment(IOPCIDevice *provider, const struct e1000_info *ei);
     inline void intelEnablePCIDevice(IOPCIDevice *provider);
@@ -328,7 +334,8 @@ private:
     bool initEventSources(IOService *provider);
     void interruptOccurred(OSObject *client, IOInterruptEventSource *src, int count);
     void txInterrupt();
-    
+    bool isKdpPacket(UInt8 *data, UInt32 len);
+
     UInt32 rxInterrupt(IONetworkInterface *interface, uint32_t maxCount, IOMbufQueue *pollQueue, void *context);
 
     bool setupDMADescriptors();
@@ -475,4 +482,6 @@ private:
     /* mbuf_t arrays */
     struct intelTxBufferInfo txBufArray[kNumTxDesc];
     struct intelRxBufferInfo rxBufArray[kNumRxDesc];
+
+    IOKernelDebugger *debuger;
 };

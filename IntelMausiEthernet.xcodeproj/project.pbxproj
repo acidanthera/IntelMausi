@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CE0C5D91228C34700065C339 /* kdp_support.h in Headers */ = {isa = PBXBuildFile; fileRef = CE0C5D90228C34700065C339 /* kdp_support.h */; };
 		CEA1F0FE206305B000B7BD6F /* libkmod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA1F0FD206305B000B7BD6F /* libkmod.a */; };
 		CEA1F1002063082300B7BD6F /* IOEthernetController.h in Headers */ = {isa = PBXBuildFile; fileRef = CEA1F0FF2063082300B7BD6F /* IOEthernetController.h */; };
 		D36B90EE1C41CA4200C1EB37 /* ich8lan.c in Sources */ = {isa = PBXBuildFile; fileRef = D36B90DA1C41BF0B00C1EB37 /* ich8lan.c */; };
@@ -31,6 +32,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CE0C5D90228C34700065C339 /* kdp_support.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kdp_support.h; sourceTree = "<group>"; };
 		CEA1F0FD206305B000B7BD6F /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkmod.a; path = IntelMausiEthernet/libkmod.a; sourceTree = "<group>"; };
 		CEA1F0FF2063082300B7BD6F /* IOEthernetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOEthernetController.h; sourceTree = "<group>"; };
 		D31D52021A566D8000DD1F17 /* IntelMausiSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntelMausiSetup.cpp; sourceTree = "<group>"; };
@@ -193,6 +195,7 @@
 		D3F3189C1AB3B0CB00DA9D9A /* Apple Headers */ = {
 			isa = PBXGroup;
 			children = (
+				CE0C5D90228C34700065C339 /* kdp_support.h */,
 				D3F318C61AB3B57D00DA9D9A /* IONetworkController.h */,
 				CEA1F0FF2063082300B7BD6F /* IOEthernetController.h */,
 				D3F318C71AB3B57D00DA9D9A /* IONetworkInterface.h */,
@@ -213,6 +216,7 @@
 				CEA1F1002063082300B7BD6F /* IOEthernetController.h in Headers */,
 				D3F318B31AB3B0E300DA9D9A /* uapi-mii.h in Headers */,
 				D3F318B41AB3B0E300DA9D9A /* ethtool.h in Headers */,
+				CE0C5D91228C34700065C339 /* kdp_support.h in Headers */,
 				D3F318B51AB3B0E300DA9D9A /* linux.h in Headers */,
 				D3F318B61AB3B0E300DA9D9A /* uapi-ip.h in Headers */,
 				D3F318B71AB3B0E300DA9D9A /* uapi-pci_regs.h in Headers */,

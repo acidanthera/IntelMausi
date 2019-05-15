@@ -46,8 +46,8 @@ matrix:
     addons:
       coverity_scan:
         project:
-          name: "acidanthera/IntelMausiEthernet"
-          description: "IntelMausiEthernet"
+          name: "acidanthera/IntelMausi"
+          description: "IntelMausi"
         notification_email: $NOTIFICATION_EMAIL
         build_command_prepend: "src=$(/usr/bin/curl -Lfs https://raw.githubusercontent.com/acidanthera/Lilu/master/Lilu/Scripts/covstrap.sh) && eval \"$src\" || exit 1"
         build_command: "xcodebuild -configuration Release"

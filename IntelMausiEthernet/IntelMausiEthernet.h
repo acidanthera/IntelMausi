@@ -20,6 +20,7 @@
 
 extern "C" {
     #include "e1000.h"
+    #include "kdp_support.h"
 }
 
 #ifdef DEBUG
@@ -87,8 +88,9 @@ enum {
 #define kTxSpareDescs   16
 
 /* The number of descriptors must be a power of 2. */
-#define kNumTxDesc      1024    /* Number of Tx descriptors */
-#define kNumRxDesc      512     /* Number of Rx descriptors */
+#define kNumTxDesc      1024        /* Number of Tx descriptors */
+#define kNumRxDesc      512         /* Number of Rx descriptors */
+#define kNumKdpDesc     kNumTxDesc  /* Number of Kdp descriptors */
 #define kTxLastDesc    (kNumTxDesc - 1)
 #define kRxLastDesc    (kNumRxDesc - 1)
 #define kTxDescMask    (kNumTxDesc - 1)
@@ -333,7 +335,9 @@ private:
     bool setupMediumDict();
     bool initEventSources(IOService *provider);
     void interruptOccurred(OSObject *client, IOInterruptEventSource *src, int count);
-    void txInterrupt();
+    void txInterrupt(IOOptionBits options = 0);
+    void freePacketEx(mbuf_t pkt, IOOptionBits options = 0);
+    void kdpStartup();
     bool isKdpPacket(UInt8 *data, UInt32 len);
 
     UInt32 rxInterrupt(IONetworkInterface *interface, uint32_t maxCount, IOMbufQueue *pollQueue, void *context);
@@ -348,7 +352,7 @@ private:
     bool checkForDeadlock();
     
     /* Jumbo frame support methods */
-    void discardPacketFragment();
+    void discardPacketFragment(bool extended = false);
     
     /* Hardware specific methods */
     bool intelIdentifyChip();
@@ -483,5 +487,8 @@ private:
     struct intelTxBufferInfo txBufArray[kNumTxDesc];
     struct intelRxBufferInfo rxBufArray[kNumRxDesc];
 
-    IOKernelDebugger *debuger;
+    /* debugger array pool */
+    mbuf_t kdpBufArray[kNumKdpDesc];
+    IOKernelDebugger *debugger;
+    bool hasDebugger;
 };

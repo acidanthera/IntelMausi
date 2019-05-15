@@ -487,14 +487,18 @@ void IntelMausi::clearDescriptors()
     DebugLog("clearDescriptors() <===\n");
 }
 
-void IntelMausi::discardPacketFragment()
+void IntelMausi::discardPacketFragment(bool extended)
 {
     /*
      * In case there is a packet fragment which hasn't been enqueued yet
      * we have to free it in order to prevent a memory leak.
      */
-    if (rxPacketHead)
-        freePacket(rxPacketHead);
+    if (rxPacketHead) {
+        if (extended)
+            freePacketEx(rxPacketHead);
+        else
+            freePacket(rxPacketHead);
+    }
     
     rxPacketHead = rxPacketTail = NULL;
     rxPacketSize = 0;

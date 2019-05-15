@@ -1,11 +1,15 @@
 # IntelMausi
 
+[![Build Status](https://travis-ci.org/acidanthera/IntelMausi.svg?branch=master)](https://travis-ci.org/acidanthera/IntelMausi) [![Scan Status](https://scan.coverity.com/projects/18406/badge.svg?flat=1)](https://scan.coverity.com/projects/18406)
+
 Intel onboard LAN driver for macOS. Courtesy of [Laura Müller](https://github.com/Mieze),
 refer to [original repository](https://github.com/Mieze/IntelMausiEthernet) for more details.
 This copy includes alterations that are of concern in [Acidanthera](https://github.com/acidanthera)
 as well as kernel debugging support initially provided by [aerror2](https://github.com/aerror2) in
 [IntelMausiEthernetWithKernelDebugger](https://github.com/aerror2/IntelMausiEthernetWithKernelDebugger)
 repository. Do use the original version when uncertain. No support or troubleshooting provided.
+
+---
 
 A few days before Christmas I started my latest project, a new driver for recent Intel onboard LAN controllers. My intention was not to replace hnak's AppleIntelE1000e.kext completely but to deliver best performance and stability on recent hardware. That's why I dropped support for a number of older NICs. Currently the driver supports:
  

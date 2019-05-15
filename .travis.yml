@@ -1,0 +1,54 @@
+language: cpp
+
+env:
+  global:
+   - secure: "GR0BN5PYY2FIewHbFOP4ELgWgFE/Wm4tMXlA/Ezckzn3VL76dwPsWxvf11jbh4Ivd5WlIgrw0aA94aOaXrs/JrREEfX+hkAZCx3NXWv7i2ChzavTQY7hhNNzGhytQMwiu+S/C7GNNdz56JoXP1UWAfew2nQ0537yt+B5Vdzx9S5YbP8xuL04QygOYjrc4DF2+gPeLxd07PdxfqnziqsBqIPOU47kUJVTqIj4AIQsW97j6vAxJ20XcZjqoWz5QcPt+3snrXNlh1cUBVb2qzwPckGc2rSfJXbj8F9Mt2hkvz6CXb6xUOmQ6JHsWuzAprmYKfGuYDRnoxw+i56FEmE6tFiVwZ35eRJy97VUHhob9chYxvqr/BXn3VCGHBxBmgDK55ePfLkSphSUKNfdxx/jOxOgp3w2LGY7TCjY/4/mGfn6eeBXnT9bqbnp0o0JT0O6jhaXAT+IHEi2vVoYfOJ2b3VbFPThL0zpN2oh58RhNJ5EW49RC3xuG84oGGS5o2mt4ajQVl56J9qJ+v79tOYOSzAcqmaMycTk2eeyl8jecXiPG+nMutnxEMUXJ/h41DtR92XrrgNaQQ5OeeqGG4H1IpDmbJ4S9fUnXqTPtTFn9HPcLNMPICOum5qKqmKiaGStDH9nXImaFBw5GGVO9Eu4QLfWQmN2dOD7snoBavFt884="
+
+matrix:
+  include:
+  - os: osx
+    compiler: clang
+
+    script:
+      - xcodebuild -configuration Debug
+      - xcodebuild -configuration Release
+
+    deploy:
+      provider: releases
+      skip_cleanup: true
+      file: "build/*/*.zip"
+      file_glob: true
+      api_key:
+        secure: AkmgXfXUBOQts2Tu5vLHLnlC8AsjgytBoi+lUc6rcPdfar0dKyLwN5GSb+D2RSYlfCR6HSHit1XoTmL7+H9LB90iJQxqzJRMXH7J9v/6vNrzd3ZG3ysDJRvJnmvSaqt6edGOVGzJ1Ln743l79p7K2tE7aFTITbfLUVSQ15UnQn4Ib059vZFRSI29ApQbL/HuR+HQ/ySUdjD8phl6F7zIMqcVRjV6kQ1FRgZgLmUdfH/5Z4cGkVPk7C9LVQGmNDZzvVp1moYvhDBgDFsxiBLq+7jJ7S3vQ1QDLDOZUg4DF/Lz9tCps6Y+J80e2HW9bEUIQFYVRdaLs/bJt9I48a9U81IZeza5GI5iVwZeXz3k2GgUAHpwhAo/I71r5rgYVP3oDWLcrX9lG+HIYMtoblf7fKSVDjbuolirB+DvM9q0zujSA0mbgHw9oFafP1klCPNE5WgjG5lu0BU132ZdNvjfODGifWghV/+yiPVJLf+KXMaw0dgtQ1WygqGB3nRL/TBl8QqBRalNbODxHk1/EkgwHNuMOyDJqS1aYowCBT4VzZkHeYf8X2bqm//BseRsMq4CEeeH0xkaUnYvqF9ZzDDMP1z4ZKWzUNA/45fkdqlqe4bMW+1NHr5iGXER4iHWrzmG5zTWJ2tA/+9/3uXTcqGqT2Sb885s4EGOOQ/3LniLVVU=
+      on:
+        tags: true
+
+  - os: osx
+    compiler: clang
+
+    script:
+      - xcodebuild analyze -quiet -scheme IntelMausiEthernet -configuration Debug CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
+      - xcodebuild analyze -quiet -scheme IntelMausiEthernet -configuration Release CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
+
+  - os: osx
+    compiler: clang
+
+    before_install:
+      - curl -Ls https://entrust.com/root-certificates/entrust_l1k.cer -o ~/entrust_l1k.crt || exit 1
+      - curl -LS https://curl.haxx.se/ca/cacert.pem -o ~/cacert.pem || exit 1
+      - cat ~/entrust_l1k.crt >> ~/cacert.pem || exit 1
+      - echo "cacert=\"$HOME/cacert.pem\"" > ~/.curlrc || exit 1
+      - echo "ca_certificate=$HOME/cacert.pem" > ~/.wgetrc || exit 1
+
+    script:
+      - echo "This script runs coverity..."
+
+    addons:
+      coverity_scan:
+        project:
+          name: "acidanthera/IntelMausiEthernet"
+          description: "IntelMausiEthernet"
+        notification_email: $NOTIFICATION_EMAIL
+        build_command_prepend: "src=$(/usr/bin/curl -Lfs https://raw.githubusercontent.com/acidanthera/Lilu/master/Lilu/Scripts/covstrap.sh) && eval \"$src\" || exit 1"
+        build_command: "xcodebuild -configuration Release"
+        branch_pattern: master

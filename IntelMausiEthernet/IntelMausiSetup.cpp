@@ -418,7 +418,7 @@ void IntelMausi::freeDMADescriptors()
         txBufDesc->complete();
         txBufDesc->release();
         txBufDesc = NULL;
-        txPhyAddr = NULL;
+        txPhyAddr = 0;
     }
     if (txDescDmaCmd) {
         txDescDmaCmd->clearMemoryDescriptor();
@@ -432,7 +432,7 @@ void IntelMausi::freeDMADescriptors()
         rxBufDesc->release();
         rxDescArray = NULL;
         rxBufDesc = NULL;
-        rxPhyAddr = NULL;
+        rxPhyAddr = 0;
     }
     if (rxDescDmaCmd) {
         rxDescDmaCmd->clearMemoryDescriptor();

@@ -35,6 +35,7 @@
 		CE0C5D90228C34700065C339 /* kdp_support.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kdp_support.h; sourceTree = "<group>"; };
 		CEA1F0FD206305B000B7BD6F /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkmod.a; path = IntelMausiEthernet/libkmod.a; sourceTree = "<group>"; };
 		CEA1F0FF2063082300B7BD6F /* IOEthernetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOEthernetController.h; sourceTree = "<group>"; };
+		CEAFDB4E22D0C66400728EF7 /* Changelog.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Changelog.md; sourceTree = SOURCE_ROOT; };
 		D31D52021A566D8000DD1F17 /* IntelMausiSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntelMausiSetup.cpp; sourceTree = "<group>"; };
 		D31D52061A566F4800DD1F17 /* IntelMausiHardware.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntelMausiHardware.cpp; sourceTree = "<group>"; };
 		D36B90D61C41BF0B00C1EB37 /* defines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = defines.h; sourceTree = "<group>"; };
@@ -152,6 +153,7 @@
 		D3CB5B7B1A4394A800A37FAA /* IntelMausiEthernet */ = {
 			isa = PBXGroup;
 			children = (
+				CEAFDB4E22D0C66400728EF7 /* Changelog.md */,
 				D3CB5B811A4394A800A37FAA /* IntelMausiEthernet.h */,
 				D3CB5B821A4394A800A37FAA /* IntelMausiEthernet.cpp */,
 				D31D52021A566D8000DD1F17 /* IntelMausiSetup.cpp */,
@@ -312,7 +314,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"${TARGET_BUILD_DIR}\"\n\ndist=(\"$FULL_PRODUCT_NAME\")\nif [ -d \"$DWARF_DSYM_FILE_NAME\" ]; then dist+=(\"$DWARF_DSYM_FILE_NAME\"); fi\n\narchive=\"${MODULE_VERSION} ($(echo $CONFIGURATION | tr /a-z/ /A-Z/)).zip\"\nrm -rf *.zip\nzip -qry -FS \"${archive}\" \"${dist[@]}\"\n";
+			shellScript = "cd \"${TARGET_BUILD_DIR}\"\n\ndist=(\"$FULL_PRODUCT_NAME\")\nif [ -d \"$DWARF_DSYM_FILE_NAME\" ]; then dist+=(\"$DWARF_DSYM_FILE_NAME\"); fi\n\narchive=\"${PRODUCT_NAME}-${MODULE_VERSION}-$(echo $CONFIGURATION | tr /a-z/ /A-Z/).zip\"\nrm -rf *.zip\nzip -qry -FS \"${archive}\" \"${dist[@]}\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -459,7 +461,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
-				MODULE_VERSION = 1.0.0;
+				MODULE_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = IntelMausi;
 				SDKROOT = macosx;
@@ -487,7 +489,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
-				MODULE_VERSION = 1.0.0;
+				MODULE_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = IntelMausi;
 				SDKROOT = macosx;

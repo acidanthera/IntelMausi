@@ -387,7 +387,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -436,7 +436,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -459,7 +459,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/IntelMausiEthernet",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
 				MODULE_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
@@ -487,7 +486,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/IntelMausiEthernet",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
 				MODULE_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";

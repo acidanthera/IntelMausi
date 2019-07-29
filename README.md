@@ -46,3 +46,11 @@ Key Features of the Driver
 - Support for Energy Efficient Ethernet (EEE).
 - VLAN support is implemented but untested as I have no need for it.
 - The driver is published under GPLv2.
+
+Support
+
+Please refer to the driver's thread on insanelymac.com
+
+https://www.insanelymac.com/forum/topic/304235-intelmausiethernetkext-for-intel-onboard-lan/
+
+in case you have further questions, need support or want to submit a problem report. As of now, support requests here on Github will be ignored!

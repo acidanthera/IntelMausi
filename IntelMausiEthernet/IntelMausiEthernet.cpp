@@ -1777,6 +1777,7 @@ void IntelMausi::setLinkUp()
     UInt32 mediumIndex = MEDIUM_INDEX_AUTO;
     UInt32 fcIndex;
     UInt32 tctl, rctl, ctrl;
+    UInt32 rate;
     
     eeeMode = 0;
     eeeName = eeeNames[kEEETypeNo];
@@ -1804,23 +1805,6 @@ void IntelMausi::setLinkUp()
         if (!(autoneg_exp & EXPANSION_NWAY))
             IOLog("Ethernet [IntelMausi]: Autonegotiated half duplex but link partner cannot autoneg.  Try forcing full duplex if link gets many collisions.\n");
     }
-    /* Enable transmits in the hardware. */
-    tctl = intelReadMem32(E1000_TCTL);
-    tctl |= E1000_TCTL_EN;
-    intelWriteMem32(E1000_TCTL, tctl);
-
-    /* Enable the receiver too. */
-    rctl = intelReadMem32(E1000_RCTL);
-    rctl |= E1000_RCTL_EN;
-    intelWriteMem32(E1000_RCTL, rctl);
-
-    /* Perform any post-link-up configuration before
-     * reporting link up.
-     */
-    if (phy->ops.cfg_on_link_up)
-        phy->ops.cfg_on_link_up(hw);
-
-    intelEnableIRQ(intrMask);
     
     /* Get link speed, duplex and flow-control mode. */
     ctrl = intelReadMem32(E1000_CTRL) & (E1000_CTRL_RFCE | E1000_CTRL_TFCE);
@@ -1848,9 +1832,12 @@ void IntelMausi::setLinkUp()
         mediumSpeed = kSpeed1000MBit;
         speedName = speed1GName;
         duplexName = duplexFullName;
+        adapterData.rx_int_delay = rxDelayTime1000;
+        adapterData.rx_abs_int_delay = rxAbsTime1000;
+        rate = intrThrValue1000;
 
         eeeMode = intelSupportsEEE(&adapterData);
-        
+
         if (fcIndex == kFlowControlTypeNone) {
             if (eeeMode) {
                 mediumIndex = MEDIUM_INDEX_1000FDEEE;
@@ -1869,7 +1856,10 @@ void IntelMausi::setLinkUp()
     } else if (adapterData.link_speed == SPEED_100) {
         mediumSpeed = kSpeed100MBit;
         speedName = speed100MName;
-        
+        adapterData.rx_int_delay = rxDelayTime100;
+        adapterData.rx_abs_int_delay = rxAbsTime100;
+        rate = intrThrValue100;
+
         if (adapterData.link_duplex != DUPLEX_FULL) {
             duplexName = duplexFullName;
 
@@ -1897,7 +1887,10 @@ void IntelMausi::setLinkUp()
     } else {
         mediumSpeed = kSpeed10MBit;
         speedName = speed10MName;
-        
+        adapterData.rx_int_delay = rxDelayTime10;
+        adapterData.rx_abs_int_delay = rxAbsTime10;
+        rate = intrThrValue10;
+
         if (adapterData.link_duplex != DUPLEX_FULL) {
             mediumIndex = MEDIUM_INDEX_10FD;
             duplexName = duplexFullName;
@@ -1906,6 +1899,33 @@ void IntelMausi::setLinkUp()
             duplexName = duplexHalfName;
         }
     }
+    /* Update the Receive Delay Timer Register */
+    intelWriteMem32(E1000_RDTR, adapterData.rx_int_delay);
+
+    /* Update the Receive Absolute Delay Timer Register */
+    intelWriteMem32(E1000_RADV, adapterData.rx_abs_int_delay);
+
+    /* Update interrupt throttle value. */
+    intelWriteMem32(E1000_ITR, rate);
+
+    /* Enable transmits in the hardware. */
+    tctl = intelReadMem32(E1000_TCTL);
+    tctl |= E1000_TCTL_EN;
+    intelWriteMem32(E1000_TCTL, tctl);
+
+    /* Enable the receiver too. */
+    rctl = intelReadMem32(E1000_RCTL);
+    rctl |= E1000_RCTL_EN;
+    intelWriteMem32(E1000_RCTL, rctl);
+
+    /* Perform any post-link-up configuration before
+     * reporting link up.
+     */
+    if (phy->ops.cfg_on_link_up)
+        phy->ops.cfg_on_link_up(hw);
+
+    intelEnableIRQ(intrMask);
+
     linkUp = true;
     
     setLinkStatus((kIONetworkLinkValid | kIONetworkLinkActive | linkOpts), mediumTable[mediumIndex], mediumSpeed, NULL);
@@ -1967,8 +1987,6 @@ void IntelMausi::setLinkUp()
     DebugLog("Ethernet [IntelMausi]: MANC=0x%08x\n", intelReadMem32(E1000_MANC));
     DebugLog("Ethernet [IntelMausi]: MANC2H=0x%08x\n", intelReadMem32(E1000_MANC2H));
     DebugLog("Ethernet [IntelMausi]: LTRV=0x%08x\n", intelReadMem32(E1000_LTRV));
-    DebugLog("Ethernet [IntelMausi]: FWSM=0x%08x\n", intelReadMem32(E1000_FWSM));
-    DebugLog("Ethernet [IntelMausi]: SWSM2=0x%08x\n", intelReadMem32(E1000_SWSM2));
 }
 
 void IntelMausi::setLinkDown()
@@ -2063,8 +2081,9 @@ bool IntelMausi::intelStart()
     adapterData.rx_int_delay = 0;
     adapterData.rx_abs_int_delay = 0;
 
-    adapterData.tx_int_delay = 0x1c;
-    adapterData.tx_abs_int_delay = 0x1c;
+    /* These values are from Apple's 82574L driver. */
+    adapterData.tx_int_delay = 0x7d;
+    adapterData.tx_abs_int_delay = 0x7d;
 
     if ((adapterData.flags & FLAG_HAS_SMART_POWER_DOWN))
         adapterData.flags |= FLAG_SMART_POWER_DOWN;

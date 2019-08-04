@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<string>as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -38,14 +38,33 @@
 			<integer>1000</integer>
 			<key>IOProviderClass</key>
 			<string>IOPCIDevice</string>
-			<key>enableCSO6</key>
-			<true/>
-			<key>enableTSO4</key>
-			<false/>
-			<key>enableTSO6</key>
-			<false/>
-			<key>maxIntrRate</key>
-			<integer>7000</integer>
+			<key>Driver Parameters</key>
+			<dict>
+				<key>enableCSO6</key>
+				<true/>
+				<key>enableTSO4</key>
+				<false/>
+				<key>enableTSO6</key>
+				<false/>
+				<key>maxIntrRate10</key>
+				<integer>3000</integer>
+				<key>maxIntrRate100</key>
+				<integer>5000</integer>
+				<key>maxIntrRate1000</key>
+				<integer>8000</integer>
+				<key>rxAbsTime10</key>
+				<integer>0</integer>
+				<key>rxAbsTime100</key>
+				<integer>0</integer>
+				<key>rxAbsTime1000</key>
+				<integer>10</integer>
+				<key>rxDelayTime10</key>
+				<integer>0</integer>
+				<key>rxDelayTime100</key>
+				<integer>0</integer>
+				<key>rxDelayTime1000</key>
+				<integer>0</integer>
+			</dict>
 		</dict>
 	</dict>
 	<key>NSHumanReadableCopyright</key>

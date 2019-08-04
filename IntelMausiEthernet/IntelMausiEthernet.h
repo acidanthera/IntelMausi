@@ -235,12 +235,23 @@ enum
     kPowerStateCount
 };
 
+#define kParamName "Driver Parameters"
 #define kEnableCSO6Name "enableCSO6"
 #define kEnableTSO4Name "enableTSO4"
 #define kEnableTSO6Name "enableTSO6"
-#define kIntrRateName "maxIntrRate"
+#define kIntrRate10Name "maxIntrRate10"
+#define kIntrRate100Name "maxIntrRate100"
+#define kIntrRate1000Name "maxIntrRate1000"
 #define kDriverVersionName "Driver_Version"
 #define kNameLenght 64
+
+#define kRxAbsTime10Name "rxAbsTime10"
+#define kRxAbsTime100Name "rxAbsTime100"
+#define kRxAbsTime1000Name "rxAbsTime1000"
+
+#define kRxDelayTime10Name "rxDelayTime10"
+#define kRxDelayTime100Name "rxDelayTime100"
+#define kRxDelayTime1000Name "rxDelayTime1000"
 
 struct intelDevice {
     UInt16 pciDevId;
@@ -458,9 +469,20 @@ private:
     UInt32 chip;
     UInt32 chipType;
     UInt32 intrMask;
-    UInt32 intrThrValue;
+    UInt32 intrThrValue10;
+    UInt32 intrThrValue100;
+    UInt32 intrThrValue1000;
     struct e1000_adapter adapterData;
     struct pci_dev pciDeviceData;
+
+    /* fine granular interrupt delay values */
+    UInt32 rxAbsTime10;
+    UInt32 rxAbsTime100;
+    UInt32 rxAbsTime1000;
+    UInt32 rxDelayTime10;
+    UInt32 rxDelayTime100;
+    UInt32 rxDelayTime1000;
+
     UInt16 eeeMode;
     UInt8 pcieCapOffset;
     UInt8 pciPMCtrlOffset;

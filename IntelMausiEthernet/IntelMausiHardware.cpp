@@ -571,7 +571,7 @@ void IntelMausi::intelConfigureRx(struct e1000_adapter *adapter)
 	intelWriteMem32(E1000_RADV, adapter->rx_abs_int_delay);
     
     /* Set interrupt throttle value. */
-    intelWriteMem32(E1000_ITR, intrThrValue);
+    intelWriteMem32(E1000_ITR, intrThrValue1000);
     
     /* Auto-Mask interrupts upon ICR access. */
 	ctrl_ext = intelReadMem32(E1000_CTRL_EXT);
@@ -850,7 +850,7 @@ void IntelMausi::intelReset(struct e1000_adapter *adapter)
                                    24 << 10);
     
     /* Set interrupt throttle value. */
-    intelWriteMem32(E1000_ITR, intrThrValue);
+    intelWriteMem32(E1000_ITR, intrThrValue100);
     
     if (hw->mac.type >= e1000_pch_spt)
         intelFlushDescRings(adapter);

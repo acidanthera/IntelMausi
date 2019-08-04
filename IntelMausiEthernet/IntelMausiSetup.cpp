@@ -62,49 +62,170 @@ static const char *offName = "disabled";
 
 void IntelMausi::getParams()
 {
+    OSDictionary *params;
     OSString *versionString;
-    OSNumber *intrRate;
+    OSNumber *num;
     OSBoolean *tso4;
     OSBoolean *tso6;
     OSBoolean *csoV6;
-    UInt32 newIntrRate;
-    
-    tso4 = OSDynamicCast(OSBoolean, getProperty(kEnableTSO4Name));
-    enableTSO4 = (tso4) ? tso4->getValue() : false;
-    
-    DebugLog("Ethernet [IntelMausi]: TCP/IPv4 segmentation offload %s.\n", enableTSO4 ? onName : offName);
-    
-    tso6 = OSDynamicCast(OSBoolean, getProperty(kEnableTSO6Name));
-    enableTSO6 = (tso6) ? tso6->getValue() : false;
-    
-    DebugLog("Ethernet [IntelMausi]: TCP/IPv6 segmentation offload %s.\n", enableTSO6 ? onName : offName);
-    
-    csoV6 = OSDynamicCast(OSBoolean, getProperty(kEnableCSO6Name));
-    enableCSO6 = (csoV6) ? csoV6->getValue() : false;
-    
-    DebugLog("Ethernet [IntelMausi]: TCP/IPv6 checksum offload %s.\n", enableCSO6 ? onName : offName);
-    
-    intrRate = OSDynamicCast(OSNumber, getProperty(kIntrRateName));
-    newIntrRate = 5000;
-    
-    versionString = OSDynamicCast(OSString, getProperty(kDriverVersionName));
-    
-    if (intrRate)
-        newIntrRate = intrRate->unsigned32BitValue();
-    
-    if (newIntrRate < 2500)
-        newIntrRate = 2500;
-    else if (newIntrRate > 10000)
-        newIntrRate = 10000;
-    
-    intrThrValue = (3906250 / (newIntrRate + 1));
-    
-    if (versionString)
-        DebugLog("Ethernet [IntelMausi]: Version %s using max interrupt rate %u.\n", versionString->getCStringNoCopy(), newIntrRate);
-    else
-        DebugLog("Ethernet [IntelMausi]: Using max interrupt rate %u.\n", newIntrRate);
+    UInt32 newIntrRate10;
+    UInt32 newIntrRate100;
+    UInt32 newIntrRate1000;
 
-    DebugLog("Ethernet [IntelMausi]: intrThrValue=%u\n", intrThrValue);
+    versionString = OSDynamicCast(OSString, getProperty(kDriverVersionName));
+
+    params = OSDynamicCast(OSDictionary, getProperty(kParamName));
+    
+    if (params) {
+        tso4 = OSDynamicCast(OSBoolean, params->getObject(kEnableTSO4Name));
+        enableTSO4 = (tso4) ? tso4->getValue() : false;
+
+        DebugLog("Ethernet [IntelMausi]: TCP/IPv4 segmentation offload %s.\n", enableTSO4 ? onName : offName);
+
+        tso6 = OSDynamicCast(OSBoolean, params->getObject(kEnableTSO6Name));
+        enableTSO6 = (tso6) ? tso6->getValue() : false;
+
+        DebugLog("Ethernet [IntelMausi]: TCP/IPv6 segmentation offload %s.\n", enableTSO6 ? onName : offName);
+
+        csoV6 = OSDynamicCast(OSBoolean, params->getObject(kEnableCSO6Name));
+        enableCSO6 = (csoV6) ? csoV6->getValue() : false;
+
+        DebugLog("Ethernet [IntelMausi]: TCP/IPv6 checksum offload %s.\n", enableCSO6 ? onName : offName);
+
+        /* Get maximum interrupt rate for 10M. */
+        num = OSDynamicCast(OSNumber, params->getObject(kIntrRate10Name));
+        newIntrRate10 = 3000;
+
+        if (num)
+            newIntrRate10 = num->unsigned32BitValue();
+
+        if (newIntrRate10 < 2500)
+            newIntrRate10 = 2500;
+        else if (newIntrRate10 > 10000)
+            newIntrRate10 = 10000;
+
+        intrThrValue10 = (3906250 / (newIntrRate10 + 1));
+
+        /* Get maximum interrupt rate for 100M. */
+        num = OSDynamicCast(OSNumber, params->getObject(kIntrRate100Name));
+        newIntrRate100 = 5000;
+
+        if (num)
+            newIntrRate100 = num->unsigned32BitValue();
+
+        if (newIntrRate100 < 2500)
+            newIntrRate100 = 2500;
+        else if (newIntrRate100 > 10000)
+            newIntrRate100 = 10000;
+
+        intrThrValue100 = (3906250 / (newIntrRate100 + 1));
+
+        /* Get maximum interrupt rate for 1000M. */
+        num = OSDynamicCast(OSNumber, params->getObject(kIntrRate1000Name));
+        newIntrRate1000 = 7000;
+
+        if (num)
+            newIntrRate1000 = num->unsigned32BitValue();
+
+        if (newIntrRate1000 < 2500)
+            newIntrRate1000 = 2500;
+        else if (newIntrRate1000 > 10000)
+            newIntrRate1000 = 10000;
+
+        intrThrValue1000 = (3906250 / (newIntrRate1000 + 1));
+
+        /* Get rxAbsTime10 from config data */
+        num = OSDynamicCast(OSNumber, params->getObject(kRxAbsTime10Name));
+
+        if (num) {
+            rxAbsTime10 = num->unsigned32BitValue();
+
+            if (rxAbsTime10 > 500)
+                rxAbsTime10 = 0;
+        } else {
+            rxAbsTime10 = 0;
+        }
+        /* Get rxAbsTime100 from config data */
+        num = OSDynamicCast(OSNumber, params->getObject(kRxAbsTime100Name));
+
+        if (num) {
+            rxAbsTime100 = num->unsigned32BitValue();
+
+            if (rxAbsTime100 > 500)
+                rxAbsTime100 = 0;
+        } else {
+            rxAbsTime100 = 0;
+        }
+        /* Get rxAbsTime1000 from config data */
+        num = OSDynamicCast(OSNumber, params->getObject(kRxAbsTime1000Name));
+
+        if (num) {
+            rxAbsTime1000 = num->unsigned32BitValue();
+
+            if (rxAbsTime1000 > 500)
+                rxAbsTime1000 = 0;
+        } else {
+            rxAbsTime1000 = 0;
+        }
+
+        /* Get rxDelayTime10 from config data */
+        num = OSDynamicCast(OSNumber, params->getObject(kRxDelayTime10Name));
+
+        if (num) {
+            rxDelayTime10 = num->unsigned32BitValue();
+
+            if (rxDelayTime10 > 100)
+                rxDelayTime10 = 0;
+        } else {
+            rxDelayTime10 = 0;
+        }
+        /* Get rxDelayTime100 from config data */
+        num = OSDynamicCast(OSNumber, params->getObject(kRxDelayTime100Name));
+
+        if (num) {
+            rxDelayTime100 = num->unsigned32BitValue();
+
+            if (rxDelayTime100 > 100)
+                rxDelayTime100 = 0;
+        } else {
+            rxDelayTime100 = 0;
+        }
+        /* Get rxDelayTime1000 from config data */
+        num = OSDynamicCast(OSNumber, params->getObject(kRxDelayTime1000Name));
+
+        if (num) {
+            rxDelayTime1000 = num->unsigned32BitValue();
+
+            if (rxDelayTime1000 > 100)
+                rxDelayTime1000 = 0;
+        } else {
+            rxDelayTime1000 = 0;
+        }
+    } else {
+        /* Use default values in case of missing config data. */
+        enableTSO4 = false;
+        enableTSO6 = false;
+        enableCSO6 = false;
+        newIntrRate10 = 3000;
+        newIntrRate100 = 5000;
+        newIntrRate1000 = 7000;
+        intrThrValue10 = (3906250 / (newIntrRate10 + 1));
+        intrThrValue100 = (3906250 / (newIntrRate100 + 1));
+        intrThrValue1000 = (3906250 / (newIntrRate1000 + 1));
+        rxAbsTime10 = 0;
+        rxAbsTime100 = 0;
+        rxAbsTime1000 = 0;
+        rxDelayTime10 = 0;
+        rxDelayTime100 = 0;
+        rxDelayTime1000 = 0;
+    }
+
+    DebugLog("Ethernet [IntelMausi]: rxAbsTime10=%u, rxAbsTime100=%u, rxAbsTime1000=%u, rxDelayTime10=%u, rxDelayTime100=%u, rxDelayTime1000=%u. \n", rxAbsTime10, rxAbsTime100, rxAbsTime1000, rxDelayTime10, rxDelayTime100, rxDelayTime1000);
+
+    if (versionString)
+        DebugLog("Ethernet [IntelMausi]: Version %s using max interrupt rates [%u; %u; %u].\n", versionString->getCStringNoCopy(), newIntrRate10, newIntrRate100, newIntrRate1000);
+    else
+        DebugLog("Ethernet [IntelMausi]: Using max interrupt rates [%u; %u; %u].\n", intrThrValue10, intrThrValue100, intrThrValue1000);
 }
 
 bool IntelMausi::setupMediumDict()

@@ -25,6 +25,10 @@
 
 #include <IOKit/network/IONetworkController.h>
 
+#ifndef APPLE_KEXT_DEPRECATE
+#define APPLE_KEXT_DEPRECATE
+#endif
+
 /*! @defined kIOEthernetControllerClass
     @abstract kIOEthernetControllerClass is the name of the
         IOEthernetController class. */

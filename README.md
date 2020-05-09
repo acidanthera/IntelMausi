@@ -35,13 +35,19 @@ A few days before Christmas I started my latest project, a new driver for recent
   - I219V2
   - I219LM2
   - I219LM3
+- 200 Series
+  - I219LM
+  - I219V
+- 300 Series
+  - I219LM
+  - I219V
 
 Key Features of the Driver
 - Support for multisegment packets relieving the network stack of unnecessary copy operations when assembling packets for transmission.
 - No-copy receive and transmit. Only small packets are copied on reception because creating a copy is more efficient than allocating a new buffer.
 - TCP, UDP and IPv4 checksum offload (receive and transmit).
 - Support for TCP/IPv6 and UDP/IPv6 checksum offload.
-- Makes use of the chip's TCP Segmentation Offload (TSO) feature with IPv4 and IPv6 in order to reduce CPU load while sending large amounts of data.
+- Makes use of the chip's TCP Segmentation Offload (TSO) feature with IPv4 and IPv6 in order to reduce CPU load while sending large amounts of data (disabled due to hardware bugs).
 - Fully optimized for Yosemite and Mavericks (64bit architecture) but should work with Mountain Lion and Lion too, provided you build from source with the 10.8 or 10.7 SDK.
 - Support for Energy Efficient Ethernet (EEE).
 - VLAN support is implemented but untested as I have no need for it.

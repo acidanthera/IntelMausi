@@ -90,6 +90,12 @@ static const struct intelDevice deviceTable[] = {
     { .pciDevId = E1000_DEV_ID_PCH_ICP_I219_V8, .device = board_pch_cnp, .deviceName = "I219V8", .deviceInfo = &e1000_pch_cnp_info },
     { .pciDevId = E1000_DEV_ID_PCH_ICP_I219_LM9, .device = board_pch_cnp, .deviceName = "I219LM9", .deviceInfo = &e1000_pch_cnp_info },
     { .pciDevId = E1000_DEV_ID_PCH_ICP_I219_V9, .device = board_pch_cnp, .deviceName = "I219V9", .deviceInfo = &e1000_pch_cnp_info },
+    { .pciDevId = E1000_DEV_ID_PCH_CMP_I219_LM10, .device = board_pch_cnp, .deviceName = "I219LM10", .deviceInfo = &e1000_pch_cnp_info },
+    { .pciDevId = E1000_DEV_ID_PCH_CMP_I219_V10, .device = board_pch_cnp, .deviceName = "I219V10", .deviceInfo = &e1000_pch_cnp_info },
+    { .pciDevId = E1000_DEV_ID_PCH_CMP_I219_LM11, .device = board_pch_cnp, .deviceName = "I219LM11", .deviceInfo = &e1000_pch_cnp_info },
+    { .pciDevId = E1000_DEV_ID_PCH_CMP_I219_V11, .device = board_pch_cnp, .deviceName = "I219V11", .deviceInfo = &e1000_pch_cnp_info },
+    { .pciDevId = E1000_DEV_ID_PCH_CMP_I219_LM12, .device = board_pch_spt, .deviceName = "I219LM12", .deviceInfo = &e1000_pch_spt_info },
+    { .pciDevId = E1000_DEV_ID_PCH_CMP_I219_V12, .device = board_pch_spt, .deviceName = "I219V12", .deviceInfo = &e1000_pch_spt_info },
 
     /* end of table */
     { .pciDevId = 0, .device = 0, .deviceName = NULL, .deviceInfo = NULL }

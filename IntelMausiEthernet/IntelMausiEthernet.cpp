@@ -20,7 +20,7 @@
 
 
 #include "IntelMausiEthernet.h"
-#include "kdp_support.h"
+#include <kdp/kdp_support.h>
 
 #pragma mark --- function prototypes ---
 
@@ -543,7 +543,6 @@ void IntelMausi::receivePacket(void *pkt, UInt32 *pktSizeOut, UInt32 timeout)
     union e1000_rx_desc_extended *desc = &rxDescArray[rxNextDescIndex];
     mbuf_t bufPkt;
     UInt64 addr;
-    UInt32 status;
     UInt32 pktSize;
     bool isReceived = false;
     UInt32 costTime = 0;
@@ -553,7 +552,7 @@ void IntelMausi::receivePacket(void *pkt, UInt32 *pktSizeOut, UInt32 timeout)
     /* WARNING: This routine is NOT allowed to allocate memory or block the thread (e.g. use mutexes, IOSleep). */
 
     while (!isReceived && costTime < timeout) {
-        while (!isReceived && ((status = OSSwapLittleToHostInt32(desc->wb.upper.status_error)) & E1000_RXD_STAT_DD)) {
+        while (!isReceived && (OSSwapLittleToHostInt32(desc->wb.upper.status_error) & E1000_RXD_STAT_DD)) {
             if (!(isEnabled && linkUp) || forceReset) {
                 DebugLog("Ethernet [IntelMausi]:receivePacket  Interface down. Waiting...\n");
                 break;
@@ -1953,6 +1952,7 @@ void IntelMausi::setLinkUp()
         pollParams.highThresholdBytes = 0x10000;
         pollParams.pollIntervalTime = (adapterData.link_speed == SPEED_1000) ? 170000 : 1000000;  /* 170µs / 1ms */
     }
+    // FIXME: This one is unimplemented on 10.8
     netif->setPacketPollingParameters(&pollParams, 0);
     DebugLog("Ethernet [IntelMausi]: pollIntervalTime: %lluus\n", (pollParams.pollIntervalTime / 1000));
 
@@ -2496,5 +2496,3 @@ static inline void prepareTSO6(mbuf_t m, UInt32 *mssHeaderSize, UInt32 *payloadS
     *mssHeaderSize = ((*mssHeaderSize << 16) | (hlen << 8));
     *payloadSize = plen - hlen;
 }
-
-

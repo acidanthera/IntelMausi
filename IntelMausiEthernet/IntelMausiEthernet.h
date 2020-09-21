@@ -20,7 +20,7 @@
 
 extern "C" {
     #include "e1000.h"
-    #include "kdp_support.h"
+    #include <kdp/kdp_support.h>
 }
 
 #ifdef DEBUG

@@ -237,13 +237,17 @@ void IntelMausi::intelEnable()
         selectedMedium = mediumTable[MEDIUM_INDEX_AUTO];
         setCurrentMedium(selectedMedium);
     }
-    
+
+#ifdef __PRIVATE_SPI__
     /* Check if we re waking up from sleep with WoL enabled and still have a valid link. */
     if (!linkOpts || !intelCheckLink(&adapterData)) {
         linkOpts = 0;
         setLinkStatus(kIONetworkLinkValid);
     }
     polling = false;
+#else
+    setLinkStatus(kIONetworkLinkValid);
+#endif /* __PRIVATE_SPI__ */
 
     intelSetupAdvForMedium(selectedMedium);
 
@@ -282,8 +286,10 @@ void IntelMausi::intelDisable()
     UInt32 ctrl, ctrlExt, rctl, status;
     int retval;
     
+#ifdef __PRIVATE_SPI__
     polling = false;
     linkOpts = 0;
+#endif /* __PRIVATE_SPI__ */
 
     /* Flush LPIC. */
     intelFlushLPIC();
@@ -334,8 +340,10 @@ void IntelMausi::intelDisable()
         }
         DebugLog("Ethernet [IntelMausi]: WUFC=0x%08x.\n", wufc);
         
+#ifdef __PRIVATE_SPI__
         linkOpts = kIONetworkLinkNoNetworkChange;
         linkStatus |= linkOpts;
+#endif /* __PRIVATE_SPI__ */
     } else {
         intelDown(&adapterData, true);
         intelWriteMem32(E1000_WUC, 0);
@@ -1091,9 +1099,15 @@ void IntelMausi::intelSetupRssHash(struct e1000_adapter *adapter)
 void IntelMausi::intelRestart()
 {
     
+#ifdef __PRIVATE_SPI__
     /* Stop output thread and flush txQueue */
     netif->stopOutputThread();
     netif->flushOutputQueue();
+#else
+    /* Stop and cleanup txQueue. */
+    txQueue->stop();
+    txQueue->flush();
+#endif /* __PRIVATE_SPI__ */
 
     /*  Also set the link status to down. */
     if (linkUp)

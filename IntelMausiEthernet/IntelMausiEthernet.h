@@ -302,9 +302,14 @@ public:
 
     virtual void receivePacket(void *pkt, UInt32 *pktSizeOut, UInt32 timeout) APPLE_KEXT_OVERRIDE;
     virtual void sendPacket(void *pkt, UInt32 pktSize) APPLE_KEXT_OVERRIDE;
+
+#ifdef __PRIVATE_SPI__
     virtual IOReturn outputStart(IONetworkInterface *interface, IOOptionBits options) APPLE_KEXT_OVERRIDE;
     virtual IOReturn setInputPacketPollingEnable(IONetworkInterface *interface, bool enabled) APPLE_KEXT_OVERRIDE;
     virtual void pollInputPackets(IONetworkInterface *interface, uint32_t maxCount, IOMbufQueue *pollQueue, void *context) APPLE_KEXT_OVERRIDE;
+#else
+    virtual UInt32 outputPacket(mbuf_t m, void *param) APPLE_KEXT_OVERRIDE;
+#endif /* __PRIVATE_SPI__ */
 	
 	virtual void getPacketBufferConstraints(IOPacketBufferConstraints *constraints) const APPLE_KEXT_OVERRIDE;
 	
@@ -351,7 +356,11 @@ private:
     void kdpStartup();
     bool isKdpPacket(UInt8 *data, UInt32 len);
 
+#ifdef __PRIVATE_SPI__
     UInt32 rxInterrupt(IONetworkInterface *interface, uint32_t maxCount, IOMbufQueue *pollQueue, void *context);
+#else
+    void rxInterrupt();
+#endif /* __PRIVATE_SPI__ */
 
     bool setupDMADescriptors();
     void freeDMADescriptors();
@@ -486,18 +495,24 @@ private:
     UInt16 eeeMode;
     UInt8 pcieCapOffset;
     UInt8 pciPMCtrlOffset;
-    
+
+#ifdef __PRIVATE_SPI__
     UInt32 linkOpts;
     IONetworkPacketPollingParameters pollParams;
+#endif /* __PRIVATE_SPI__ */
 
     /* flags */
     bool isEnabled;
 	bool promiscusMode;
 	bool multicastMode;
     bool linkUp;
-    
+
+#ifdef __PRIVATE_SPI__
     bool polling;
-    
+#else
+    bool stalled;
+#endif /* __PRIVATE_SPI__ */
+
     bool forceReset;
     bool wolCapable;
     bool wolActive;

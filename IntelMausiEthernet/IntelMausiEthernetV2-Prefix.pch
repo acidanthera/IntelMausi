@@ -2,14 +2,17 @@
 // Prefix header for all source files of the 'IntelMausi' target in the 'IntelMausiEthernet' project
 //
 
-#define __PRIVATE_SPI__
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 
 #include <Availability.h>
+
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= __MAC_10_8
+#define __PRIVATE_SPI__
+#endif
+
 #include <libkern/libkern.h>
 #include <libkern/OSAtomic.h>
 #include <machine/limits.h>

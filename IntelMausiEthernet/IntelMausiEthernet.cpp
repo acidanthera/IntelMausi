@@ -2304,7 +2304,7 @@ void IntelMausi::setLinkUp()
     intelEnableIRQ(intrMask);
 
     linkUp = true;
-    
+
 #ifdef __PRIVATE_SPI__
     setLinkStatus((kIONetworkLinkValid | kIONetworkLinkActive | linkOpts), mediumTable[mediumIndex], mediumSpeed, NULL);
     linkOpts = 0;
@@ -2334,6 +2334,8 @@ void IntelMausi::setLinkUp()
     /* Start output thread, statistics update and watchdog. */
     netif->startOutputThread();
 #else
+    (void) mediumIndex;
+    (void) mediumSpeed;
     /* Restart txQueue, statistics update and watchdog. */
     txQueue->start();
 

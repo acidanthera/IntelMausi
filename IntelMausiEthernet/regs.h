@@ -214,6 +214,9 @@
 #define E1000_WUFC	0x05808	/* Wakeup Filter Control - RW */
 #define E1000_WUS	0x05810	/* Wakeup Status - RO */
 #define E1000_MANC	0x05820	/* Management Control - RW */
+#define E1000_IPAV	0x05838 /* IP Address Valid */
+#define E1000_IP4AT(_n)	(0x05848 + (_n * 8)) /* IPv4 Address Table */
+#define E1000_IP6AT(_n)	(0x05880 + (_n * 4)) /* IPv6 Address Table */
 #define E1000_FFLT	0x05F00	/* Flexible Filter Length Table - RW Array */
 #define E1000_HOST_IF	0x08800	/* Host Interface */
 

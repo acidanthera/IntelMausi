@@ -48,7 +48,7 @@ Key Features of the Driver
 - TCP, UDP and IPv4 checksum offload (receive and transmit).
 - Support for TCP/IPv6 and UDP/IPv6 checksum offload.
 - Makes use of the chip's TCP Segmentation Offload (TSO) feature with IPv4 and IPv6 in order to reduce CPU load while sending large amounts of data (disabled due to hardware bugs).
-- Fully optimized for Mavericks or newer (64-bit architecture). Can work work with Mountain Lion and Lion too after disabling the missing imports.
+- Fully optimized for Mavericks or newer (64-bit architecture).
 - Support for Energy Efficient Ethernet (EEE).
 - VLAN support is implemented but untested as I have no need for it.
 - The driver is published under GPLv2.

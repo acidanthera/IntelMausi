@@ -143,8 +143,23 @@
 #define BM_RAR_CTRL(_i)		(BM_PHY_REG(BM_WUC_PAGE, 19 + ((_i) << 2)))
 #define BM_MTA(_i)		(BM_PHY_REG(BM_WUC_PAGE, 128 + ((_i) << 1)))
 
+#define BM_IPAV            PHY_REG(BM_WUC_PAGE, 64)
+#define BM_PRXC            PHY_REG(BM_WUC_PAGE, 70)
+#define BM_IP4AT0(_i)        (BM_PHY_REG(BM_WUC_PAGE, 82 + (_i << 1)))
+#define BM_IP4AT1(_i)        (BM_PHY_REG(BM_WUC_PAGE, 83 + (_i << 1)))
+
+#define BM_IP6AT0(_i)        (BM_PHY_REG(BM_WUC_PAGE, 88 + (_i << 3)))
+#define BM_IP6AT1(_i)        (BM_PHY_REG(BM_WUC_PAGE, 89 + (_i << 3)))
+#define BM_IP6AT2(_i)        (BM_PHY_REG(BM_WUC_PAGE, 90 + (_i << 3)))
+#define BM_IP6AT3(_i)        (BM_PHY_REG(BM_WUC_PAGE, 91 + (_i << 3)))
+#define BM_IP6AT4(_i)        (BM_PHY_REG(BM_WUC_PAGE, 92 + (_i << 3)))
+#define BM_IP6AT5(_i)        (BM_PHY_REG(BM_WUC_PAGE, 93 + (_i << 3)))
+#define BM_IP6AT6(_i)        (BM_PHY_REG(BM_WUC_PAGE, 94 + (_i << 3)))
+#define BM_IP6AT7(_i)        (BM_PHY_REG(BM_WUC_PAGE, 95 + (_i << 3)))
+
 #define BM_RCTL_UPE		0x0001	/* Unicast Promiscuous Mode */
 #define BM_RCTL_MPE		0x0002	/* Multicast Promiscuous Mode */
+#define BM_RCTL_SAE		0x0004	/* Slave Access Enable */
 #define BM_RCTL_MO_SHIFT	3	/* Multicast Offset Shift */
 #define BM_RCTL_MO_MASK		(3 << 3)	/* Multicast Offset Mask */
 #define BM_RCTL_BAM		0x0020	/* Broadcast Accept Mode */

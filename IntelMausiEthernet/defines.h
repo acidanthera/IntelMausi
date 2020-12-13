@@ -41,6 +41,8 @@
 #define E1000_WUFC_MC   0x00000008 /* Directed Multicast Wakeup Enable */
 #define E1000_WUFC_BC   0x00000010 /* Broadcast Wakeup Enable */
 #define E1000_WUFC_ARP  0x00000020 /* ARP Request Packet Wakeup Enable */
+#define E1000_WUFC_IP4  0x00000040 /* Directed IPv4 Packet Wakeup Enable */
+#define E1000_WUFC_IP6  0x00000080 /* Directed IPv6 Packet Wakeup Enable */
 
 /* Wake Up Status */
 #define E1000_WUS_LNKC         E1000_WUFC_LNKC

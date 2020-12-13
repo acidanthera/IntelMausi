@@ -314,7 +314,7 @@
 		D3CB5B6C1A4394A800A37FAA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1200;
+				LastUpgradeCheck = 1220;
 				ORGANIZATIONNAME = "Laura Müller";
 			};
 			buildConfigurationList = D3CB5B6F1A4394A800A37FAA /* Build configuration list for PBXProject "IntelMausiEthernet" */;

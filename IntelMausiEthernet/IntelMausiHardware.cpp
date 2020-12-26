@@ -1457,6 +1457,7 @@ void IntelMausi::intelInitPhyWakeup(UInt32 wufc, struct IntelAddrData *addrData)
         DebugLog("[IntelMausi]: Failed to acquire PHY.\n");
         return;
     }
+    
     /* Enable access to wakeup registers on and set page to BM_WUC_PAGE */
     error = e1000_enable_phy_wakeup_reg_access_bm(hw, &wuc_enable);
     
@@ -1464,6 +1465,7 @@ void IntelMausi::intelInitPhyWakeup(UInt32 wufc, struct IntelAddrData *addrData)
         DebugLog("[IntelMausi]: Failed to access PHY wakeup registers.\n");
         goto release;
     }
+    
     /* copy MAC MTA to PHY MTA - only needed for pchlan */
     for (i = 0; i < hw->mac.mta_reg_count; i++) {
         mac_reg = E1000_READ_REG_ARRAY(hw, E1000_MTA, i);
@@ -1472,6 +1474,7 @@ void IntelMausi::intelInitPhyWakeup(UInt32 wufc, struct IntelAddrData *addrData)
         hw->phy.ops.write_reg_page(hw, BM_MTA(i) + 1,
                                    (u16)((mac_reg >> 16) & 0xFFFF));
     }
+    
     /* configure PHY Rx Control register */
     hw->phy.ops.read_reg_page(hw, BM_RCTL, &phy_reg);
     mac_reg = intelReadMem32(E1000_RCTL);
@@ -1518,7 +1521,7 @@ void IntelMausi::intelInitPhyWakeup(UInt32 wufc, struct IntelAddrData *addrData)
     /* enable PHY wakeup in MAC register */
     intelWriteMem32(E1000_WUFC, wufc);
     intelWriteMem32(E1000_WUC, (E1000_WUC_PHY_WAKE | E1000_WUC_APMPME | E1000_WUC_PME_STATUS | wuc));
-    
+
     /*
      * Setup IPv4 and IPv6 wakeup address registers with the
      * retrieved address list.
@@ -1578,8 +1581,9 @@ void IntelMausi::intelInitPhyWakeup(UInt32 wufc, struct IntelAddrData *addrData)
     wuc_enable |= BM_WUC_ENABLE_BIT | BM_WUC_HOST_WU_BIT;
     error = e1000_disable_phy_wakeup_reg_access_bm(hw, &wuc_enable);
     
-    if (error)
+    if (error) {
         DebugLog("[IntelMausi]: Failed to set PHY Host Wakeup bit.\n");
+    }
     
 release:
     hw->phy.ops.release(hw);
@@ -1877,6 +1881,3 @@ release:
 done:
     return error;
 }
-
-
-

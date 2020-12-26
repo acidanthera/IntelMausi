@@ -473,7 +473,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
-				MODULE_VERSION = 1.0.6;
+				MODULE_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -501,7 +501,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
-				MODULE_VERSION = 1.0.6;
+				MODULE_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -640,7 +640,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
-				MODULE_VERSION = 1.0.6;
+				MODULE_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = IntelMausi;
 				SDKROOT = macosx;
@@ -668,7 +668,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
-				MODULE_VERSION = 1.0.6;
+				MODULE_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = IntelMausi;
 				SDKROOT = macosx;

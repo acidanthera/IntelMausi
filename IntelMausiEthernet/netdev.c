@@ -110,7 +110,7 @@ static const struct e1000_reg_info e1000_reg_info_tbl[] = {
 
 #endif /* DISABLED_CODE */
 
-#if ME_SUPPORTED_CHECK
+#if DISABLED_CODE
 struct e1000e_me_supported {
     u16 device_id;        /* supported device ID */
 };

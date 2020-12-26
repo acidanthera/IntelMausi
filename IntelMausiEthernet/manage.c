@@ -251,7 +251,9 @@ s32 e1000e_mng_write_dhcp_info(struct e1000_hw *hw, u8 *buffer, u16 length)
     struct e1000_host_mng_command_header hdr;
     s32 ret_val;
     u32 hicr;
-
+    
+    /* The use of memset is more future proof and silences Clang Analyzer. */
+    memset(&hdr, 0, sizeof (struct e1000_host_mng_command_header));
     hdr.command_id = E1000_MNG_DHCP_TX_PAYLOAD_CMD;
     hdr.command_length = length;
     hdr.reserved1 = 0;

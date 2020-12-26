@@ -886,6 +886,7 @@ s32 e1000_set_eee_pchlan(struct e1000_hw *hw)
         data &= ~I82579_LPI_100_PLL_SHUT;
         ret_val = e1000_write_emi_reg_locked(hw, I82579_LPI_PLL_SHUT,
                              data);
+        (void)ret_val;
     }
 
     /* R/Clr IEEE MMD 3.1 bits 11:10 - Tx/Rx LPI Received */
@@ -3851,7 +3852,8 @@ static s32 e1000_update_nvm_checksum_spt(struct e1000_hw *hw)
 
         /* Convert offset to bytes. */
         act_offset = (i + new_bank_offset) << 1;
-
+        (void)act_offset;
+        
         usleep_range(100, 200);
 
         /* Write the data to the new bank. Offset in words */
@@ -3897,7 +3899,8 @@ static s32 e1000_update_nvm_checksum_spt(struct e1000_hw *hw)
      * to 1's. We can write 1's to 0's without an erase
      */
     act_offset = (old_bank_offset + E1000_ICH_NVM_SIG_WORD) * 2 + 1;
-
+    (void)act_offset;
+    
     /* offset in words but we read dword */
     act_offset = old_bank_offset + E1000_ICH_NVM_SIG_WORD - 1;
     ret_val = e1000_read_flash_dword_ich8lan(hw, act_offset, &dword);
@@ -5174,6 +5177,8 @@ static s32 e1000_kmrn_lock_loss_workaround_ich8lan(struct e1000_hw *hw)
      * stability
      */
     ret_val = e1000e_phy_has_link_generic(hw, 1, 0, &link);
+    (void)ret_val;
+    
     if (!link)
         return 0;
 

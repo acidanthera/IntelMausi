@@ -24,22 +24,25 @@
 #pragma mark --- hardware initialization methods ---
 
 
+/**
+ * initPCIConfigSpace
+ */
 bool IntelMausi::initPCIConfigSpace(IOPCIDevice *provider)
 {
     UInt32 lat1, lat2;
     bool result = false;
-    
+
     /* Get vendor and device info. */
     pciDeviceData.vendor = provider->extendedConfigRead16(kIOPCIConfigVendorID);
     pciDeviceData.device = provider->extendedConfigRead16(kIOPCIConfigDeviceID);
     pciDeviceData.subsystem_vendor = provider->extendedConfigRead16(kIOPCIConfigSubSystemVendorID);
     pciDeviceData.subsystem_device = provider->extendedConfigRead16(kIOPCIConfigSubSystemID);
     pciDeviceData.revision = provider->extendedConfigRead8(kIOPCIConfigRevisionID);
-    
+
     /* Identify the chipset. */
     if (!intelIdentifyChip())
         goto done;
-    
+
     if (chipType >= board_pch_lpt) {
         /*
          * Set platform power management values for
@@ -47,14 +50,14 @@ bool IntelMausi::initPCIConfigSpace(IOPCIDevice *provider)
          */
         pciDeviceData.maxSnoop = provider->extendedConfigRead16(E1000_PCI_LTR_CAP_LPT);
         pciDeviceData.maxNoSnoop = provider->extendedConfigRead16(E1000_PCI_LTR_CAP_LPT + 2);
-        
+
         lat1 = (pciDeviceData.maxSnoop & 0x3ff) << (((pciDeviceData.maxSnoop >> 10) & 0x7) * 5);
         lat2 = (pciDeviceData.maxNoSnoop & 0x3ff) << (((pciDeviceData.maxNoSnoop >> 10) & 0x7) * 5);
         maxLatency = (lat1 > lat2) ? lat1 : lat2;
-        
+
         if (maxLatency > kMaxDmaLatency)
             maxLatency = kMaxDmaLatency;
-        
+
         DebugLog("[IntelMausi]: maxSnoop: 0x%04x (%uns), maxNoSnoop: 0x%04x (%uns).\n", pciDeviceData.maxSnoop, lat1, pciDeviceData.maxNoSnoop, lat2);
     }
     /* Get the bus information. */
@@ -63,9 +66,9 @@ bool IntelMausi::initPCIConfigSpace(IOPCIDevice *provider)
 
     /* Enable the device. */
     intelEnablePCIDevice(provider);
-    
+
     baseMap = provider->mapDeviceMemoryWithRegister(kIOPCIConfigBaseAddress0, kIOMapInhibitCache);
-    
+
     if (!baseMap) {
         IOLog("[IntelMausi]: region #0 not an MMIO resource, aborting.\n");
         goto done;
@@ -73,10 +76,10 @@ bool IntelMausi::initPCIConfigSpace(IOPCIDevice *provider)
     baseAddr = reinterpret_cast<volatile void *>(baseMap->getVirtualAddress());
     adapterData.hw.hw_addr = (u8 __iomem *)baseAddr;
     adapterData.hw.flash_address = NULL;
-    
+
     if ((adapterData.flags & FLAG_HAS_FLASH) && (adapterData.hw.mac.type < e1000_pch_spt)) {
         flashMap = provider->mapDeviceMemoryWithRegister(kIOPCIConfigBaseAddress1, kIOMapInhibitCache);
-        
+
         if (!flashMap) {
             IOLog("[IntelMausi]: region #1 not an MMIO resource, aborting.\n");
             goto error;
@@ -85,10 +88,10 @@ bool IntelMausi::initPCIConfigSpace(IOPCIDevice *provider)
         adapterData.hw.flash_address = (u8 __iomem *)flashAddr;
     }
     result = true;
-    
+
 done:
     return result;
-    
+
 error:
     RELEASE(baseMap);
     baseMap = NULL;
@@ -97,6 +100,9 @@ error:
 }
 
 
+/**
+ * initPCIPowerManagment
+ */
 void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000_info *ei)
 {
 #ifdef DEBUG
@@ -106,12 +112,12 @@ void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000
     UInt16 aspmDisable;
     UInt16 pmCap;
     UInt8 pmCapOffset;
-    
+
     /* Setup power management. */
     if (provider->findPCICapability(kIOPCIPowerManagementCapability, &pmCapOffset)) {
         pmCap = provider->extendedConfigRead16(pmCapOffset + kIOPCIPMCapability);
         DebugLog("[IntelMausi]: PCI power management capabilities: 0x%x.\n", pmCap);
-        
+
         if (pmCap & (kPCIPMCPMESupportFromD3Cold | kPCIPMCPMESupportFromD3Hot)) {
             wolCapable = true;
             DebugLog("[IntelMausi]: PME# from D3 (cold/hot) supported.\n");
@@ -121,7 +127,7 @@ void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000
         IOLog("[IntelMausi]: PCI power management unsupported.\n");
     }
     provider->enablePCIPowerManagement();
-    
+
     /* Get PCIe link information. */
     if (provider->findPCICapability(kIOPCIPCIExpressCapability, &pcieCapOffset)) {
 #ifdef DEBUG
@@ -130,21 +136,21 @@ void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000
         pcieLinkCtl = provider->extendedConfigRead16(pcieCapOffset + kIOPCIELinkControl);
         DebugLog("[IntelMausi]: PCIe link capabilities: 0x%08x, link control: 0x%04x.\n", pcieLinkCap, pcieLinkCtl);
         aspmDisable = 0;
-        
+
         if (ei->flags2 & FLAG2_DISABLE_ASPM_L0S)
             aspmDisable |= kIOPCIELinkCtlL0s;
-        
+
         if (ei->flags2 & FLAG2_DISABLE_ASPM_L1)
             aspmDisable |= kIOPCIELinkCtlL1;
 
         if (aspmDisable) {
             provider->extendedConfigWrite16(pcieCapOffset + kIOPCIELinkControl, (pcieLinkCtl & ~aspmDisable));
-            
+
             IOSleep(10);
         }
 
         pcieLinkCtl = provider->extendedConfigRead16(pcieCapOffset + kIOPCIELinkControl);
-        
+
         if (pcieLinkCtl & (kIOPCIELinkCtlASPM | kIOPCIELinkCtlClkReqEn))
             DebugLog("[IntelMausi]: PCIe ASPM enabled. link control: 0x%04x.\n", pcieLinkCtl);
         else
@@ -153,26 +159,29 @@ void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000
 }
 
 
+/**
+ * setPowerStateWakeAction
+ */
 IOReturn IntelMausi::setPowerStateWakeAction(OSObject *owner, void *arg1, void *arg2, void *arg3, void *arg4)
 {
     IntelMausi *ethCtlr = OSDynamicCast(IntelMausi, owner);
     IOPCIDevice *dev;
     UInt16 val16;
     UInt8 offset;
-    
+
     if (ethCtlr) {
         dev = ethCtlr->pciDevice;
         offset = ethCtlr->pciPMCtrlOffset;
-        
+
         val16 = dev->extendedConfigRead16(offset);
-        
+
         val16 &= ~(kPCIPMCSPowerStateMask | kPCIPMCSPMEStatus | kPCIPMCSPMEEnable);
         val16 |= kPCIPMCSPowerStateD0;
-        
+
         dev->extendedConfigWrite16(offset, val16);
-        
+
         IOSleep(10);
-        
+
         /* Restore the PCI Command register. */
         ethCtlr->intelEnablePCIDevice(dev);
     }
@@ -180,28 +189,31 @@ IOReturn IntelMausi::setPowerStateWakeAction(OSObject *owner, void *arg1, void *
 }
 
 
+/**
+ * setPowerStateSleepAction
+ */
 IOReturn IntelMausi::setPowerStateSleepAction(OSObject *owner, void *arg1, void *arg2, void *arg3, void *arg4)
 {
     IntelMausi *ethCtlr = OSDynamicCast(IntelMausi, owner);
     IOPCIDevice *dev;
     UInt16 val16;
     UInt8 offset;
-    
+
     if (ethCtlr) {
         dev = ethCtlr->pciDevice;
         offset = ethCtlr->pciPMCtrlOffset;
-        
+
         val16 = dev->extendedConfigRead16(offset);
-        
+
         val16 &= ~(kPCIPMCSPowerStateMask | kPCIPMCSPMEStatus | kPCIPMCSPMEEnable);
-        
+
         if (ethCtlr->wolActive)
             val16 |= (kPCIPMCSPMEStatus | kPCIPMCSPMEEnable | kPCIPMCSPowerStateD3);
         else
             val16 |= kPCIPMCSPowerStateD3;
-        
+
         dev->extendedConfigWrite16(offset, val16);
-        
+
         IOSleep(10);
     }
     return kIOReturnSuccess;
@@ -209,24 +221,26 @@ IOReturn IntelMausi::setPowerStateSleepAction(OSObject *owner, void *arg1, void 
 
 
 /**
+ * intelEEPROMChecks
+ *
  * Reference: e1000_eeprom_checks(struct e1000_adapter *adapter)
  */
 void IntelMausi::intelEEPROMChecks(struct e1000_adapter *adapter)
 {
-	struct e1000_hw *hw = &adapter->hw;
-	int ret_val;
-	u16 buf = 0;
-    
-	if (hw->mac.type != e1000_82573)
-		return;
-    
-	ret_val = e1000_read_nvm(hw, NVM_INIT_CONTROL2_REG, 1, &buf);
-	le16_to_cpus(&buf);
-    
-	if (!ret_val && (!(buf & BIT(0)))) {
-		/* Deep Smart Power Down (DSPD) */
-		IOLog("[IntelMausi]: Warning: detected DSPD enabled in EEPROM.\n");
-	}
+    struct e1000_hw *hw = &adapter->hw;
+    int ret_val;
+    u16 buf = 0;
+
+    if (hw->mac.type != e1000_82573)
+        return;
+
+    ret_val = e1000_read_nvm(hw, NVM_INIT_CONTROL2_REG, 1, &buf);
+    le16_to_cpus(&buf);
+
+    if (!ret_val && (!(buf & BIT(0)))) {
+        /* Deep Smart Power Down (DSPD) */
+        IOLog("[IntelMausi]: Warning: detected DSPD enabled in EEPROM.\n");
+    }
 }
 
 
@@ -235,10 +249,15 @@ void IntelMausi::intelEEPROMChecks(struct e1000_adapter *adapter)
  *
  * Reference: e1000_irq_enable
  */
-void IntelMausi::intelEnableIRQ(UInt32 newMask)
+void IntelMausi::intelEnableIRQ(struct e1000_adapter *adapter)
 {
-    intelWriteMem32(E1000_IMC, ~newMask);
-    intelWriteMem32(E1000_IMS, newMask);
+    struct e1000_hw *hw = &adapter->hw;
+
+    if (hw->mac.type >= e1000_pch_lpt) {
+        intelWriteMem32(E1000_IMS, IMS_ENABLE_MASK | E1000_IMS_ECCER);
+    } else {
+        intelWriteMem32(E1000_IMS, IMS_ENABLE_MASK);
+    }
     intelFlush();
 }
 
@@ -247,7 +266,7 @@ void IntelMausi::intelEnableIRQ(UInt32 newMask)
  * intelDisableIRQ - Mask off interrupt generation on the NIC
  *
  * Reference: e1000_irq_disable
- **/
+ */
 void IntelMausi::intelDisableIRQ()
 {
     intelWriteMem32(E1000_IMC, ~0);
@@ -256,6 +275,8 @@ void IntelMausi::intelDisableIRQ()
 
 
 /**
+ * intelEnable
+ *
  * Reference: __e1000_resume(struct pci_dev *pdev)
  */
 void IntelMausi::intelEnable()
@@ -264,7 +285,7 @@ void IntelMausi::intelEnable()
     const IONetworkMedium *selectedMedium;
 
     selectedMedium = getSelectedMedium();
-    
+
     if (!selectedMedium) {
         DebugLog("[IntelMausi]: No medium selected. Falling back to autonegotiation.\n");
         selectedMedium = mediumTable[MEDIUM_INDEX_AUTO];
@@ -281,10 +302,19 @@ void IntelMausi::intelEnable()
     setLinkStatus(kIONetworkLinkValid);
 #endif /* __PRIVATE_SPI__ */
 
+    intelSetupAdvForMedium(selectedMedium);
+
+    e1000_phy_hw_reset(hw);
+
+    if (hw->mac.type >= e1000_pch2lan)
+        e1000_resume_workarounds_pchlan(hw);
+
+    e1000e_power_up_phy(&adapterData);
+
     /* report the system wakeup cause from S3/S4 */
     if (adapterData.flags2 & FLAG2_HAS_PHY_WAKEUP) {
         u16 phy_data;
-        
+
         e1e_rphy(&adapterData.hw, BM_WUS, &phy_data);
         if (phy_data) {
             IOLog("[IntelMausi]: PHY Wakeup cause - %s\n",
@@ -298,7 +328,7 @@ void IntelMausi::intelEnable()
         e1e_wphy(&adapterData.hw, BM_WUS, ~0);
     } else {
         u32 wus = intelReadMem32(E1000_WUS);
-        
+
         if (wus) {
             IOLog("[IntelMausi]: MAC Wakeup cause - %s\n",
                            wus & E1000_WUS_EX ? "Unicast Packet" :
@@ -308,56 +338,42 @@ void IntelMausi::intelEnable()
                            wus & E1000_WUS_LNKC ? "Link Status Change" :
                            "other");
         }
-        
         intelWriteMem32(E1000_WUS, ~0);
     }
 
-    /*
-     
-     e1000e_reset(adapter);
-
-     e1000_init_manageability_pt(adapter);
-     */
-     /* If the controller has AMT, do not set DRV_LOAD until the interface
-      * is up.  For all other cases, let the f/w know that the h/w is now
-      * under the control of the driver.
-      */
-     
-    /*if (!(adapter->flags & FLAG_HAS_AMT))
-         e1000e_get_hw_control(adapter);
-     */
-    
-    intelSetupAdvForMedium(selectedMedium);
-
-    e1000_phy_hw_reset(hw);
-    
-    if (hw->mac.type >= e1000_pch2lan)
-		e1000_resume_workarounds_pchlan(hw);
-    
-    e1000e_power_up_phy(&adapterData);
-    
     intelReset(&adapterData);
-    
-#if DISABLED_CODE
-    
-	/* DMA latency requirement to workaround jumbo issue */
-	pm_qos_add_request(&adapter->netdev->pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
-                       PM_QOS_DEFAULT_VALUE);
-    
-#endif /* DISABLED_CODE */
-    
-	intelConfigure(&adapterData);
-    
-	/* From here on the code is the same as e1000e_up() */
-	clear_bit(__E1000_DOWN, &adapterData.state);
-    
-	intelEnableIRQ(intrMask);
-    
-	hw->mac.get_link_status = true;
+
+    intelInitManageabilityPt(&adapterData);
+
+    /* Let the f/w know that the h/w is now under the control of the driver
+     * even in case the device has AMT in order to avoid problems after wakeup.
+     */
+    e1000e_get_hw_control(&adapterData);
+    /*
+     if (!(adapter->flags & FLAG_HAS_AMT))
+        e1000e_get_hw_control(&adapterData);
+     */
+
+    /* From here on the code is the same as e1000e_up() */
+
+    /* hardware has been reset, we need to reload some things */
+    intelConfigure(&adapterData);
+
+    clear_bit(__E1000_DOWN, &adapterData.state);
+
+    intelEnableIRQ(&adapterData);
+
+    /* Tx queue started by watchdog timer when link is up */
+    //e1000e_trigger_lsc(adapter);
+
+    hw->mac.get_link_status = true;
 }
 
+
 /**
- *Reference: __e1000_shutdown(struct pci_dev *pdev, bool runtime)
+ * intelDisable
+ *
+ * Reference: __e1000_shutdown(struct pci_dev *pdev, bool runtime)
  */
 void IntelMausi::intelDisable()
 {
@@ -365,11 +381,11 @@ void IntelMausi::intelDisable()
     struct e1000_hw *hw = &adapterData.hw;
     u32 ctrl, ctrlExt, rctl, status, wufc = adapterData.wol, linkStatus = kIONetworkLinkValid;
     int retval = 0;
-    
+
     DebugLog("[IntelMausi]: intelDisable()<===");
     DebugLog("[IntelMausi]: wolCapable=%u",wolCapable);
     DebugLog("[IntelMausi]: wolActive=%u",wolActive);
-    
+
 #ifdef __PRIVATE_SPI__
     polling = false;
 #endif /* __PRIVATE_SPI__ */
@@ -378,21 +394,21 @@ void IntelMausi::intelDisable()
     intelFlushLPIC();
 
     status = intelReadMem32(E1000_STATUS);
-    
+
     if (status & E1000_STATUS_LU)
         wufc &= ~E1000_WUFC_LNKC;
-    
+
     if (wolActive && wufc) {
         /* Get interface's IP addresses. */
         getAddressList(&addrData);
 
         intelDown(&adapterData, false);
         intelSetupRxControl(&adapterData);
-        
+
         rctl = intelReadMem32(E1000_RCTL);
         rctl &= ~(E1000_RCTL_UPE | E1000_RCTL_MPE);
         intelWriteMem32(E1000_RCTL, rctl);
-        
+
         /* turn on all-multi mode if wake on multicast is enabled */
         if (wufc & E1000_WUFC_MC) {
             rctl = intelReadMem32(E1000_RCTL);
@@ -433,7 +449,7 @@ void IntelMausi::intelDisable()
         intelWriteMem32(E1000_WUFC, 0);
         intelPowerDownPhy(&adapterData);
     }
-    
+
     if (adapterData.hw.phy.type == e1000_phy_igp_3) {
         e1000e_igp3_phy_powerdown_workaround_ich8lan(&adapterData.hw);
     } else if (hw->mac.type >= e1000_pch_lpt) {
@@ -444,7 +460,7 @@ void IntelMausi::intelDisable()
                 e1000_enable_ulp_lpt_lp(hw, false);
         }
     }
-    
+
     /* Ensure that the appropriate bits are set in LPI_CTRL
      * for EEE in Sx
      */
@@ -473,7 +489,7 @@ void IntelMausi::intelDisable()
         }
         hw->phy.ops.release(hw);
     }
-    
+
     if (linkUp) {
         linkUp = false;
         setLinkStatus(linkStatus);
@@ -494,13 +510,13 @@ void IntelMausi::intelConfigure(struct e1000_adapter *adapter)
     setMulticastMode(true);
 
     intelInitManageabilityPt(adapter);
-    
+
     /* Setup transmitter */
     intelConfigureTx(adapter);
-    
+
     intelSetupRssHash(adapter);
     intelVlanStripEnable(adapter);
-    
+
     /* Setup reciever */
     intelSetupRxControl(adapter);
     intelConfigureRx(adapter);
@@ -512,6 +528,7 @@ void IntelMausi::intelConfigure(struct e1000_adapter *adapter)
  * @adapter: board private structure
  *
  * Configure the Tx unit of the MAC after a reset.
+ *
  * Reference: e1000_configure_tx (struct e1000_adapter *adapter)
  */
 void IntelMausi::intelConfigureTx(struct e1000_adapter *adapter)
@@ -520,25 +537,25 @@ void IntelMausi::intelConfigureTx(struct e1000_adapter *adapter)
     u64 tdba = txPhyAddr;
     u32 tdlen = kTxDescSize, tctl, tarc;
     u32 txdctl;
-    
+
     /* Setup the HW Tx Head and Tail descriptor pointers */
     intelWriteMem32(E1000_TDBAL(0), (tdba & DMA_BIT_MASK(32)));
     intelWriteMem32(E1000_TDBAH(0), (tdba >> 32));
     intelWriteMem32(E1000_TDLEN(0), tdlen);
     intelWriteMem32(E1000_TDH(0), 0);
     intelWriteMem32(E1000_TDT(0), 0);
-    
+
     txNextDescIndex = txDirtyIndex = txCleanBarrierIndex = 0;
     txNumFreeDesc = kNumTxDesc;
-    
+
     intelUpdateTxDescTail(0);
-    
+
     /* Set the Tx Interrupt Delay register */
     intelWriteMem32(E1000_TIDV, adapter->tx_int_delay);
     /* Tx irq moderation */
     intelWriteMem32(E1000_TADV, adapter->tx_abs_int_delay);
-    
-    
+
+
     if (adapter->flags2 & FLAG2_DMA_BURST) {
         txdctl = intelReadMem32(E1000_TXDCTL(0));
 
@@ -559,7 +576,7 @@ void IntelMausi::intelConfigureTx(struct e1000_adapter *adapter)
         txdctl = intelReadMem32(E1000_TXDCTL(0));
         intelWriteMem32(E1000_TXDCTL(0), txdctl);
     }
-    
+
     /* erratum work around: set txdctl the same for both queues */
     intelWriteMem32(E1000_TXDCTL(1), txdctl);
 
@@ -587,19 +604,19 @@ void IntelMausi::intelConfigureTx(struct e1000_adapter *adapter)
         tarc |= 1;
         intelWriteMem32(E1000_TARC(1), tarc);
     }
-    
+
     intelWriteMem32(E1000_TCTL, tctl);
-    
+
     hw->mac.ops.config_collision_dist(hw);
-    
+
     /* SPT and KBL Si errata workaround to avoid data corruption */
     if (hw->mac.type == e1000_pch_spt) {
         u32 reg_val;
-        
+
         reg_val = intelReadMem32(E1000_IOSFPC);
         reg_val |= E1000_RCTL_RDMTS_HEX;
         intelWriteMem32(E1000_IOSFPC, reg_val);
-        
+
         reg_val = intelReadMem32(E1000_TARC(0));
         /*
          * SPT and KBL Si errata workaround to avoid Tx hang.
@@ -663,8 +680,8 @@ void IntelMausi::intelSetupRxControl(struct e1000_adapter *adapter)
      * We setup hardware to always strip CRC as we want jumbo frame support
      * anyway even if it breaks management SMBUS traffic on some machines.
      */
-    
-    
+
+
     rctl |= E1000_RCTL_SECRC;
     // FIXME: Add option for disabling jumbo in favour of CRC header
      /*if (adapter->flags2 & FLAG2_CRC_STRIPPING)
@@ -687,7 +704,7 @@ void IntelMausi::intelSetupRxControl(struct e1000_adapter *adapter)
         e1e_wphy(hw, 0x11, 0x0003);
         e1e_wphy(hw, 22, phy_data);
     }
-    
+
     /* Setup buffer sizes */
     rctl &= ~E1000_RCTL_SZ_4096;
     rctl |= E1000_RCTL_BSEX;
@@ -707,18 +724,18 @@ void IntelMausi::intelSetupRxControl(struct e1000_adapter *adapter)
             rctl |= E1000_RCTL_SZ_16384;
             break;
     }
-    
+
     /* Enable Extended Status in all Receive Descriptors */
     rfctl = intelReadMem32(E1000_RFCTL);
-    
+
     if (hw->mac.type == e1000_ich8lan) {
         rfctl |= (E1000_RFCTL_NEW_IPV6_EXT_DIS | E1000_RFCTL_IPV6_EX_DIS | E1000_RFCTL_EXTEN | E1000_RFCTL_NFSW_DIS | E1000_RFCTL_NFSR_DIS);
     } else {
         rfctl |= E1000_RFCTL_EXTEN;
     }
-    
+
     intelWriteMem32(E1000_RFCTL, rfctl);
-    
+
     intelWriteMem32(E1000_RCTL, rctl);
     /* just started the receive unit, no need to restart */
     adapter->flags &= ~FLAG_RESTART_NOW;
@@ -731,21 +748,21 @@ void IntelMausi::intelSetupRxControl(struct e1000_adapter *adapter)
  *
  * Configure the Rx unit of the MAC after a reset.
  *
- * Reference: e1000_configure_rx (struct e1000_adapter *adapter)
+ * Reference: e1000_configure_rx
  */
 void IntelMausi::intelConfigureRx(struct e1000_adapter *adapter)
 {
-	//struct e1000_hw *hw = &adapter->hw;
+    //struct e1000_hw *hw = &adapter->hw;
     u64 rdba = rxPhyAddr;
     u32 rctl, rxcsum, ctrl_ext, rdlen = kRxDescSize;
-	/* disable receives while setting up the descriptors */
-	rctl = intelReadMem32(E1000_RCTL);
+    /* disable receives while setting up the descriptors */
+    rctl = intelReadMem32(E1000_RCTL);
     if (!(adapter->flags2 & FLAG2_NO_DISABLE_RX))
         intelWriteMem32(E1000_RCTL, rctl & ~E1000_RCTL_EN);
-	intelFlush();
-    
+    intelFlush();
+
     usleep_range(10000, 11000);
-    
+
     if (adapter->flags2 & FLAG2_DMA_BURST) {
         /* set the writeback threshold (only takes effect if the RDTR
          * is set). set GRAN=1 and write back up to 0x4 worth, and
@@ -758,27 +775,27 @@ void IntelMausi::intelConfigureRx(struct e1000_adapter *adapter)
         intelWriteMem32(E1000_RXDCTL(0), E1000_RXDCTL_DMA_BURST_ENABLE);
         intelWriteMem32(E1000_RXDCTL(1), E1000_RXDCTL_DMA_BURST_ENABLE);
     }
-    
-	/* set the Receive Delay Timer Register */
-	intelWriteMem32(E1000_RDTR, adapter->rx_int_delay);
-    
-	/* irq moderation */
-	intelWriteMem32(E1000_RADV, adapter->rx_abs_int_delay);
-    
+
+    /* set the Receive Delay Timer Register */
+    intelWriteMem32(E1000_RDTR, adapter->rx_int_delay);
+
+    /* irq moderation */
+    intelWriteMem32(E1000_RADV, adapter->rx_abs_int_delay);
+
     /* Set interrupt throttle value. */
     intelWriteMem32(E1000_ITR, intrThrValue1000);
-    
+
     /* Auto-Mask interrupts upon ICR access. */
-	ctrl_ext = intelReadMem32(E1000_CTRL_EXT);
-	ctrl_ext |= E1000_CTRL_EXT_IAME;
-	intelWriteMem32(E1000_IAM, 0xffffffff);
-	intelWriteMem32(E1000_CTRL_EXT, ctrl_ext);
+    ctrl_ext = intelReadMem32(E1000_CTRL_EXT);
+    ctrl_ext |= E1000_CTRL_EXT_IAME;
+    intelWriteMem32(E1000_IAM, 0xffffffff);
+    intelWriteMem32(E1000_CTRL_EXT, ctrl_ext);
 
     intelFlush();
-    
-	/* Setup the HW Rx Head and Tail Descriptor Pointers and
-	 * the Base and Length of the Rx Descriptor Ring
-	 */
+
+    /* Setup the HW Rx Head and Tail Descriptor Pointers and
+     * the Base and Length of the Rx Descriptor Ring
+     */
     intelWriteMem32(E1000_RDBAL(0), (rdba & DMA_BIT_MASK(32)));
     intelWriteMem32(E1000_RDBAH(0), (rdba >> 32));
     intelWriteMem32(E1000_RDLEN(0), rdlen);
@@ -788,25 +805,25 @@ void IntelMausi::intelConfigureRx(struct e1000_adapter *adapter)
         intelUpdateRxDescTail(kRxLastDesc);
     else
         intelWriteMem32(E1000_RDT(0), kRxLastDesc);
-    
+
     rxCleanedCount = rxNextDescIndex = 0;
-    
-	/* Enable Receive Checksum Offload for TCP and UDP */
-	rxcsum = intelReadMem32(E1000_RXCSUM);
+
+    /* Enable Receive Checksum Offload for TCP and UDP */
+    rxcsum = intelReadMem32(E1000_RXCSUM);
     rxcsum |= E1000_RXCSUM_TUOFL;
-	intelWriteMem32(E1000_RXCSUM, rxcsum);
-    
-	/* With jumbo frames, excessive C-state transition latencies result
-	 * in dropped transactions. Latency requirements will be adjusted
+    intelWriteMem32(E1000_RXCSUM, rxcsum);
+
+    /* With jumbo frames, excessive C-state transition latencies result
+     * in dropped transactions. Latency requirements will be adjusted
      * when the link has been established and speed is known.
-	 */
-	if ((mtu > ETH_DATA_LEN) && (adapter->flags & FLAG_IS_ICH)) {
+     */
+    if ((mtu > ETH_DATA_LEN) && (adapter->flags & FLAG_IS_ICH)) {
         u32 rxdctl = intelReadMem32(E1000_RXDCTL(0));
         intelWriteMem32(E1000_RXDCTL(0), rxdctl | 0x3 | BIT(8));
     }
-    
+
     /* Enable Receives */
-	intelWriteMem32(E1000_RCTL, rctl);
+    intelWriteMem32(E1000_RCTL, rctl);
 }
 
 
@@ -832,31 +849,31 @@ void IntelMausi::intelDown(struct e1000_adapter *adapter, bool reset)
     if (!(adapter->flags2 & FLAG2_NO_DISABLE_RX))
         intelWriteMem32(E1000_RCTL, rctl & ~E1000_RCTL_EN);
     /* flush and sleep below */
-    
+
     /* disable transmits in the hardware */
     tctl = intelReadMem32(E1000_TCTL);
     tctl &= ~E1000_TCTL_EN;
     intelWriteMem32(E1000_TCTL, tctl);
-    
+
     /* flush both disables and wait for them to finish */
     intelFlush();
     usleep_range(10000, 11000);
-    
+
     intelDisableIRQ();
-    
+
     spin_lock(&adapter->stats64_lock);
     updateStatistics(adapter);
     spin_unlock(&adapter->stats64_lock);
-    
+
     intelFlushDescriptors();
-    
+
     adapter->link_speed = 0;
     adapter->link_duplex = 0;
-    
+
     /* Disable Si errata workaround on PCHx for jumbo frame flow */
     if ((hw->mac.type >= e1000_pch2lan) && (mtu > ETH_DATA_LEN) && e1000_lv_jumbo_workaround_ich8lan(hw, false))
         DebugLog("[IntelMausi]: failed to disable jumbo frame workaround mode\n");
-    
+
     if (reset)
         intelReset(adapter);
     else if (hw->mac.type >= e1000_pch_spt)
@@ -864,37 +881,39 @@ void IntelMausi::intelDown(struct e1000_adapter *adapter, bool reset)
 
     // Clean tx/rx rings
     clearDescriptors();
-    
+
     if (chipType >= board_pch_lpt)
         requireMaxBusStall(0);
 }
 
 
 /**
+ * intelInitManageabilityPt
+ *
  * Reference: e1000_init_manageability_pt
  */
 void IntelMausi::intelInitManageabilityPt(struct e1000_adapter *adapter)
 {
-	struct e1000_hw *hw = &adapter->hw;
-	u32 manc, manc2h, mdef, i, j;
-    
-	if (!(adapter->flags & FLAG_MNG_PT_ENABLED))
-		return;
-    
-	manc = intelReadMem32(E1000_MANC);
-    
-	/* enable receiving management packets to the host. this will probably
-	 * generate destination unreachable messages from the host OS, but
-	 * the packets will be handled on SMBUS
-	 */
-	manc |= E1000_MANC_EN_MNG2HOST;
-	manc2h = intelReadMem32(E1000_MANC2H);
-    
-	switch (hw->mac.type) {
+    struct e1000_hw *hw = &adapter->hw;
+    u32 manc, manc2h, mdef, i, j;
+
+    if (!(adapter->flags & FLAG_MNG_PT_ENABLED))
+        return;
+
+    manc = intelReadMem32(E1000_MANC);
+
+    /* enable receiving management packets to the host. this will probably
+     * generate destination unreachable messages from the host OS, but
+     * the packets will be handled on SMBUS
+     */
+    manc |= E1000_MANC_EN_MNG2HOST;
+    manc2h = intelReadMem32(E1000_MANC2H);
+
+    switch (hw->mac.type) {
         default:
             manc2h |= (E1000_MANC2H_PORT_623 | E1000_MANC2H_PORT_664);
             break;
-            
+
         case e1000_82574:
         case e1000_82583:
             /* Check if IPMI pass-through decision filter already exists;
@@ -902,21 +921,21 @@ void IntelMausi::intelInitManageabilityPt(struct e1000_adapter *adapter)
              */
             for (i = 0, j = 0; i < 8; i++) {
                 mdef = intelReadMem32(E1000_MDEF(i));
-                
+
                 /* Ignore filters with anything other than IPMI ports */
                 if (mdef & ~(E1000_MDEF_PORT_623 | E1000_MDEF_PORT_664))
                     continue;
-                
+
                 /* Enable this decision filter in MANC2H */
                 if (mdef)
                     manc2h |= (1 << i);
-                
+
                 j |= mdef;
             }
-            
+
             if (j == (E1000_MDEF_PORT_623 | E1000_MDEF_PORT_664))
                 break;
-            
+
             /* Create new decision filter in an empty filter */
             for (i = 0, j = 0; i < 8; i++)
                 if (intelReadMem32(E1000_MDEF(i)) == 0) {
@@ -925,13 +944,13 @@ void IntelMausi::intelInitManageabilityPt(struct e1000_adapter *adapter)
                     j++;
                     break;
                 }
-            
+
             if (!j)
                 IOLog("[IntelMausi]: Unable to create IPMI pass-through filter.\n");
             break;
-	}
-	intelWriteMem32(E1000_MANC2H, manc2h);
-	intelWriteMem32(E1000_MANC, manc);
+    }
+    intelWriteMem32(E1000_MANC2H, manc2h);
+    intelWriteMem32(E1000_MANC, manc);
 }
 
 
@@ -1061,7 +1080,7 @@ void IntelMausi::intelReset(struct e1000_adapter *adapter)
                 fc->low_water = 0x05048;
                 break;
             }
-            
+
             pba = 14;
             intelWriteMem32(E1000_PBA, pba);
             fc->high_water = ((pba << 10) * 9 / 10) & E1000_FCRTH_RTH;
@@ -1076,10 +1095,10 @@ void IntelMausi::intelReset(struct e1000_adapter *adapter)
      */
     adapter->tx_fifo_limit = min_t(u32, ((intelReadMem32(E1000_PBA) >> 16) << 10) - 96,
                                    24 << 10);
-    
+
     /* Set interrupt throttle value. */
     intelWriteMem32(E1000_ITR, intrThrValue100);
-    
+
     if (hw->mac.type >= e1000_pch_spt)
         intelFlushDescRings(adapter);
         //e1000_flush_desc_rings(adapter);
@@ -1089,22 +1108,22 @@ void IntelMausi::intelReset(struct e1000_adapter *adapter)
 
     /* We force aknowlegment that the network interface is in control */
     e1000e_get_hw_control(adapter);
-    
+
     intelWriteMem32(E1000_WUC, 0);
-    
+
     if (mac->ops.init_hw(hw))
         IOLog("[IntelMausi]: Hardware Error.\n");
-    
+
     //e1000_update_mng_vlan(adapter);
-    
+
     /* Enable h/w to recognize an 802.1Q VLAN Ethernet packet */
     intelWriteMem32(E1000_VET, ETH_P_8021Q);
-    
+
     intelResetAdaptive(hw);
-    
+
     /* restore systim and hwtstamp settings */
     //e1000e_systim_reset(adapter);
-    
+
     /* Set EEE advertisement as appropriate */
     if (adapter->flags2 & FLAG2_HAS_EEE) {
         s32 ret_val;
@@ -1157,12 +1176,11 @@ void IntelMausi::intelReset(struct e1000_adapter *adapter)
  * The PHY cannot be powered down if management or WoL is active.
  *
  * Reference: e1000_power_down_phy
- *
  */
 void IntelMausi::intelPowerDownPhy(struct e1000_adapter *adapter)
 {
-	if (adapter->hw.phy.ops.power_down)
-		adapter->hw.phy.ops.power_down(&adapter->hw);
+    if (adapter->hw.phy.ops.power_down)
+        adapter->hw.phy.ops.power_down(&adapter->hw);
 }
 
 
@@ -1174,32 +1192,31 @@ void IntelMausi::intelPowerDownPhy(struct e1000_adapter *adapter)
  *  be directed to and from the management interface.
  *
  *  Reference: e1000e_enable_mng_pass_thru
- *
  */
 bool IntelMausi::intelEnableMngPassThru(struct e1000_hw *hw)
 {
-	u32 manc;
-	u32 fwsm, factps;
-    
-	manc = intelReadMem32(E1000_MANC);
-    
-	if (!(manc & E1000_MANC_RCV_TCO_EN))
-		return false;
-    
-	if (hw->mac.has_fwsm) {
-		fwsm = intelReadMem32(E1000_FWSM);
-		factps = intelReadMem32(E1000_FACTPS);
-        
-		if (!(factps & E1000_FACTPS_MNGCG) &&
-		    ((fwsm & E1000_FWSM_MODE_MASK) ==
-		     (e1000_mng_mode_pt << E1000_FWSM_MODE_SHIFT)))
-			return true;
-	} else if ((manc & E1000_MANC_SMBUS_EN) &&
+    u32 manc;
+    u32 fwsm, factps;
+
+    manc = intelReadMem32(E1000_MANC);
+
+    if (!(manc & E1000_MANC_RCV_TCO_EN))
+        return false;
+
+    if (hw->mac.has_fwsm) {
+        fwsm = intelReadMem32(E1000_FWSM);
+        factps = intelReadMem32(E1000_FACTPS);
+
+        if (!(factps & E1000_FACTPS_MNGCG) &&
+            ((fwsm & E1000_FWSM_MODE_MASK) ==
+             (e1000_mng_mode_pt << E1000_FWSM_MODE_SHIFT)))
+            return true;
+    } else if ((manc & E1000_MANC_SMBUS_EN) &&
                !(manc & E1000_MANC_ASF_EN)) {
-		return true;
-	}
-    
-	return false;
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -1210,24 +1227,23 @@ bool IntelMausi::intelEnableMngPassThru(struct e1000_hw *hw)
  *  Reset the Adaptive Interframe Spacing throttle to default values.
  *
  *  Reference: e1000e_reset_adaptive
- *
  **/
 void IntelMausi::intelResetAdaptive(struct e1000_hw *hw)
 {
-	struct e1000_mac_info *mac = &hw->mac;
-    
-	if (!mac->adaptive_ifs) {
-		DebugLog("[IntelMausi]: Not in Adaptive IFS mode!\n");
-		return;
-	}
-	mac->current_ifs_val = 0;
-	mac->ifs_min_val = IFS_MIN;
-	mac->ifs_max_val = IFS_MAX;
-	mac->ifs_step_size = IFS_STEP;
-	mac->ifs_ratio = IFS_RATIO;
-    
-	mac->in_ifs_mode = false;
-	intelWriteMem32(E1000_AIT, 0);
+    struct e1000_mac_info *mac = &hw->mac;
+
+    if (!mac->adaptive_ifs) {
+        DebugLog("[IntelMausi]: Not in Adaptive IFS mode!\n");
+        return;
+    }
+    mac->current_ifs_val = 0;
+    mac->ifs_min_val = IFS_MIN;
+    mac->ifs_max_val = IFS_MAX;
+    mac->ifs_step_size = IFS_STEP;
+    mac->ifs_ratio = IFS_RATIO;
+
+    mac->in_ifs_mode = false;
+    intelWriteMem32(E1000_AIT, 0);
 }
 
 
@@ -1239,36 +1255,35 @@ void IntelMausi::intelResetAdaptive(struct e1000_hw *hw)
  *  time between transmitted packets and time between collisions.
  *
  *  Reference: e1000e_update_adaptive
- *
- **/
+ */
 void IntelMausi::intelUpdateAdaptive(struct e1000_hw *hw)
 {
-	struct e1000_mac_info *mac = &hw->mac;
-    
-	if (!mac->adaptive_ifs) {
-		DebugLog("[IntelMausi]: Not in Adaptive IFS mode!\n");
-		return;
-	}
-    
-	if ((mac->collision_delta * mac->ifs_ratio) > mac->tx_packet_delta) {
-		if (mac->tx_packet_delta > MIN_NUM_XMITS) {
-			mac->in_ifs_mode = true;
-			if (mac->current_ifs_val < mac->ifs_max_val) {
-				if (!mac->current_ifs_val)
-					mac->current_ifs_val = mac->ifs_min_val;
-				else
-					mac->current_ifs_val += mac->ifs_step_size;
-                
-				intelWriteMem32(E1000_AIT, mac->current_ifs_val);
-			}
-		}
-	} else {
-		if (mac->in_ifs_mode && (mac->tx_packet_delta <= MIN_NUM_XMITS)) {
-			mac->current_ifs_val = 0;
-			mac->in_ifs_mode = false;
-			intelWriteMem32(E1000_AIT, 0);
-		}
-	}
+    struct e1000_mac_info *mac = &hw->mac;
+
+    if (!mac->adaptive_ifs) {
+        DebugLog("[IntelMausi]: Not in Adaptive IFS mode!\n");
+        return;
+    }
+
+    if ((mac->collision_delta * mac->ifs_ratio) > mac->tx_packet_delta) {
+        if (mac->tx_packet_delta > MIN_NUM_XMITS) {
+            mac->in_ifs_mode = true;
+            if (mac->current_ifs_val < mac->ifs_max_val) {
+                if (!mac->current_ifs_val)
+                    mac->current_ifs_val = mac->ifs_min_val;
+                else
+                    mac->current_ifs_val += mac->ifs_step_size;
+
+                intelWriteMem32(E1000_AIT, mac->current_ifs_val);
+            }
+        }
+    } else {
+        if (mac->in_ifs_mode && (mac->tx_packet_delta <= MIN_NUM_XMITS)) {
+            mac->current_ifs_val = 0;
+            mac->in_ifs_mode = false;
+            intelWriteMem32(E1000_AIT, 0);
+        }
+    }
 }
 
 
@@ -1280,12 +1295,12 @@ void IntelMausi::intelUpdateAdaptive(struct e1000_hw *hw)
  */
 void IntelMausi::intelVlanStripDisable(struct e1000_adapter *adapter)
 {
-	u32 ctrl;
-    
-	/* disable VLAN tag insert/strip */
-	ctrl = intelReadMem32(E1000_CTRL);
-	ctrl &= ~E1000_CTRL_VME;
-	intelWriteMem32(E1000_CTRL, ctrl);
+    u32 ctrl;
+
+    /* disable VLAN tag insert/strip */
+    ctrl = intelReadMem32(E1000_CTRL);
+    ctrl &= ~E1000_CTRL_VME;
+    intelWriteMem32(E1000_CTRL, ctrl);
 }
 
 
@@ -1297,15 +1312,21 @@ void IntelMausi::intelVlanStripDisable(struct e1000_adapter *adapter)
  */
 void IntelMausi::intelVlanStripEnable(struct e1000_adapter *adapter)
 {
-	UInt32 ctrl;
-    
-	/* enable VLAN tag insert/strip */
-	ctrl = intelReadMem32(E1000_CTRL);
-	ctrl |= E1000_CTRL_VME;
-	intelWriteMem32(E1000_CTRL, ctrl);
+    u32 ctrl;
+
+    /* enable VLAN tag insert/strip */
+    ctrl = intelReadMem32(E1000_CTRL);
+    ctrl |= E1000_CTRL_VME;
+    intelWriteMem32(E1000_CTRL, ctrl);
 }
 
-
+/**
+ * intelRssKeyFill - helper to fill RSS key hash
+ * @buffer: buffer to fill
+ * @len: size of buffer, should be <= INTEL_RSS_KEY_LEN (52)
+ *
+ * Reference: netdev_rss_key_fill
+ */
 void IntelMausi::intelRssKeyFill(void *buffer, size_t len)
 {
     assert(len > sizeof(rssHashKey));
@@ -1320,6 +1341,8 @@ void IntelMausi::intelRssKeyFill(void *buffer, size_t len)
 
 
 /**
+ * intelSetupRssHash
+ *
  * Reference: e1000e_setup_rss_hash
  */
 void IntelMausi::intelSetupRssHash(struct e1000_adapter *adapter)
@@ -1327,41 +1350,44 @@ void IntelMausi::intelSetupRssHash(struct e1000_adapter *adapter)
     u32 mrqc, rxcsum;
     u32 rss_key[10];
     int i;
-    
+
     intelRssKeyFill(rss_key, sizeof(rss_key));
-    
+
     for (i = 0; i < 10; i++)
         intelWriteMem32(E1000_RSSRK(i), rss_key[i]);
-    
+
     /* Direct all traffic to queue 0 */
     for (i = 0; i < 32; i++)
         intelWriteMem32(E1000_RETA(i), 0);
-    
+
     /* Disable raw packet checksumming so that RSS hash is placed in
      * descriptor on writeback.
      */
     rxcsum = intelReadMem32(E1000_RXCSUM);
     rxcsum |= E1000_RXCSUM_PCSD;
-    
+
     intelWriteMem32(E1000_RXCSUM, rxcsum);
-    
+
     mrqc = (E1000_MRQC_RSS_FIELD_IPV4 |
             E1000_MRQC_RSS_FIELD_IPV4_TCP |
             E1000_MRQC_RSS_FIELD_IPV6 |
             E1000_MRQC_RSS_FIELD_IPV6_TCP |
             E1000_MRQC_RSS_FIELD_IPV6_TCP_EX);
-    
+
     intelWriteMem32(E1000_MRQC, mrqc);
 }
 
 
-/* Reset the NIC in case a tx deadlock or a pci error occurred. timerSource and txQueue
+/**
+ * intelRestart
+ *
+ * Reset the NIC in case a tx deadlock or a pci error occurred. timerSource and txQueue
  * are stopped immediately but will be restarted by checkLinkStatus() when the link has
  * been reestablished.
  */
 void IntelMausi::intelRestart()
 {
-    
+
 #ifdef __PRIVATE_SPI__
     /* Stop output thread and flush txQueue */
     netif->stopOutputThread();
@@ -1382,31 +1408,30 @@ void IntelMausi::intelRestart()
 
     /* Reset NIC and cleanup both descriptor rings. */
     intelDisableIRQ();
-	intelReset(&adapterData);
-    
+    intelReset(&adapterData);
+
     clearDescriptors();
     rxCleanedCount = rxNextDescIndex = 0;
     deadlockWarn = 0;
     forceReset = false;
     eeeMode = 0;
 
+    /* From here on the code is the same as e1000e_up() */
+
     /* Reinitialize NIC. */
     intelConfigure(&adapterData);
-    
-    /* From here on the code is the same as e1000e_up() */
-    clear_bit(__E1000_DOWN, &adapterData.state);
-    
-	intelEnableIRQ(intrMask);
-        
-	adapterData.hw.mac.get_link_status = true;
-    
-    /* Tx queue started by watchdog timer when link is up */
 
-    //e1000e_trigger_lsc(adapter);
+    clear_bit(__E1000_DOWN, &adapterData.state);
+
+    intelEnableIRQ(&adapterData);
+
+    adapterData.hw.mac.get_link_status = true;
 }
 
 
 /**
+ * intelUpdateTxDescTail
+ *
  * Reference: e1000e_update_tdt_wa
  */
 void IntelMausi::intelUpdateTxDescTail(UInt32 index)
@@ -1414,12 +1439,12 @@ void IntelMausi::intelUpdateTxDescTail(UInt32 index)
     if (adapterData.flags2 & FLAG2_PCIM2PCI_ARBITER_WA) {
         struct e1000_hw *hw = &adapterData.hw;
         s32 ret = __ew32_prepare(hw);
-        
+
         intelWriteMem32(E1000_TDT(0),index);
-        
+
         if (!ret && (index != intelReadMem32(E1000_TDT(0)))) {
             u32 tctl = intelReadMem32(E1000_TCTL);
-            
+
             intelWriteMem32(E1000_TCTL, tctl & ~E1000_TCTL_EN);
             IOLog("[IntelMausi]: ME firmware caused invalid TDT - resetting.\n");
             forceReset = true;
@@ -1432,18 +1457,20 @@ void IntelMausi::intelUpdateTxDescTail(UInt32 index)
 
 
 /**
+ * intelUpdateRxDescTail
+ *
  * Reference: e1000e_update_rdt_wa
  */
 void IntelMausi::intelUpdateRxDescTail(UInt32 index)
 {
     struct e1000_hw *hw = &adapterData.hw;
     s32 ret = __ew32_prepare(hw);
-    
+
     intelWriteMem32(E1000_RDT(0),index);
-    
+
     if (!ret && (index != intelReadMem32(E1000_RDT(0)))) {
         UInt32 rctl = intelReadMem32(E1000_RCTL);
-        
+
         intelWriteMem32(E1000_RCTL, rctl & ~E1000_RCTL_EN);
         IOLog("[IntelMausi]: ME firmware caused invalid RDT - resetting.\n");
         forceReset = true;
@@ -1451,20 +1478,25 @@ void IntelMausi::intelUpdateRxDescTail(UInt32 index)
 }
 
 
+/**
+ * intelEnablePCIDevice
+ */
 inline void IntelMausi::intelEnablePCIDevice(IOPCIDevice *provider)
 {
     UInt16 cmdReg;
-    
+
     cmdReg = provider->extendedConfigRead16(kIOPCIConfigCommand);
     cmdReg |= (kIOPCICommandBusMaster | kIOPCICommandMemorySpace);
     cmdReg &= ~kIOPCICommandIOSpace;
-	provider->extendedConfigWrite16(kIOPCIConfigCommand, cmdReg);
-    
+    provider->extendedConfigWrite16(kIOPCIConfigCommand, cmdReg);
+
     IOSleep(10);
 }
 
 
 /**
+ * intelFlushDescriptors
+ *
  * Reference: e1000e_flush_descriptors
  */
 void IntelMausi::intelFlushDescriptors()
@@ -1472,16 +1504,16 @@ void IntelMausi::intelFlushDescriptors()
     /* flush pending descriptor writebacks to memory */
     intelWriteMem32(E1000_TIDV, adapterData.tx_int_delay | E1000_TIDV_FPD);
     intelWriteMem32(E1000_RDTR, adapterData.rx_int_delay | E1000_RDTR_FPD);
-    
+
     /* execute the writes immediately */
     intelFlush();
-    
+
     /* due to rare timing issues, write to TIDV/RDTR again to ensure the
      * write is successful
      */
     intelWriteMem32(E1000_TIDV, adapterData.tx_int_delay | E1000_TIDV_FPD);
     intelWriteMem32(E1000_RDTR, adapterData.rx_int_delay | E1000_RDTR_FPD);
-    
+
     /* execute the writes immediately */
     intelFlush();
 }
@@ -1502,11 +1534,11 @@ void IntelMausi::intelFlushTxRing(struct e1000_adapter *adapter)
     struct e1000_data_desc *desc = NULL;
     u32 tdt, tctl, txd_lower = E1000_TXD_CMD_IFCS;
     u16 size = 512;
-    
+
     tctl = intelReadMem32(E1000_TCTL);
     intelWriteMem32(E1000_TCTL, tctl | E1000_TCTL_EN);
     tdt = intelReadMem32(E1000_TDT(0));
-    
+
     if (tdt != txNextDescIndex) {
         IOLog("[IntelMausi]: Failed to flush tx descriptor ring.\n");
         return;
@@ -1520,7 +1552,7 @@ void IntelMausi::intelFlushTxRing(struct e1000_adapter *adapter)
     desc->buffer_addr = OSSwapHostToLittleInt64(txPhyAddr);
     desc->lower.data = OSSwapHostToLittleInt32(txd_lower | size);
     desc->upper.data = 0;
-    
+
     intelWriteMem32(E1000_TDT(0), txNextDescIndex);
     intelFlush();
     usleep_range(200, 250);
@@ -1533,28 +1565,27 @@ void IntelMausi::intelFlushTxRing(struct e1000_adapter *adapter)
  * Mark all descriptors in the RX ring as consumed and disable the rx ring
  *
  * Reference: e1000_flush_rx_ring(struct e1000_adapter *adapter)
- *
  */
 void IntelMausi::intelFlushRxRing(struct e1000_adapter *adapter)
 {
     u32 rctl, rxdctl;
-    
+
     DebugLog("[IntelMausi]: Flushing rx descriptor ring.\n");
 
     rctl = intelReadMem32(E1000_RCTL);
     intelWriteMem32(E1000_RCTL, rctl & ~E1000_RCTL_EN);
     intelFlush();
     usleep_range(100, 150);
-    
+
     rxdctl = intelReadMem32(E1000_RXDCTL(0));
     /* zero the lower 14 bits (prefetch and host thresholds) */
     rxdctl &= 0xffffc000;
-    
+
     /* update thresholds: prefetch threshold to 31, host threshold to 1
      * and make sure the granularity is "descriptors" and not "cache lines"
      */
     rxdctl |= (0x1F | BIT(8) | E1000_RXDCTL_THRESH_UNIT_DESC);
-    
+
     intelWriteMem32(E1000_RXDCTL(0), rxdctl);
     /* momentarily enable the RX ring for the changes to take effect */
     intelWriteMem32(E1000_RCTL, rctl | E1000_RCTL_EN);
@@ -1573,14 +1604,14 @@ void IntelMausi::intelFlushRxRing(struct e1000_adapter *adapter)
  * Failure to do this will cause the HW to enter a unit hang state which can
  * only be released by PCI reset on the device
  *
- * Reference: e1000_flush_desc_rings(struct e1000_adapter *adapter)
+ * Reference: e1000_flush_desc_rings
  */
 void IntelMausi::intelFlushDescRings(struct e1000_adapter *adapter)
 {
     u16 hang_state;
     u32 fext_nvm11, tdlen;
     struct e1000_hw *hw = &adapter->hw;
-    
+
     /* First, disable MULR fix in FEXTNVM11 */
     fext_nvm11 = intelReadMem32(E1000_FEXTNVM11);
     fext_nvm11 |= E1000_FEXTNVM11_DISABLE_MULR_FIX;
@@ -1591,7 +1622,7 @@ void IntelMausi::intelFlushDescRings(struct e1000_adapter *adapter)
 
     if (!(hang_state & FLUSH_DESC_REQUIRED) || !tdlen)
         return;
-    
+
     intelFlushTxRing(adapter);
     /* recheck, maybe the fault is caused by the rx ring */
     hang_state = pciDevice->extendedConfigRead16(PCICFG_DESC_RING_STATUS);
@@ -1602,14 +1633,16 @@ void IntelMausi::intelFlushDescRings(struct e1000_adapter *adapter)
 
 
 /**
- * Reference: e1000e_has_link(struct e1000_adapter *adapter)
+ * intelCheckLink
+ *
+ * Reference: e1000e_has_link
  */
 bool IntelMausi::intelCheckLink(struct e1000_adapter *adapter)
 {
     struct e1000_hw *hw = &adapter->hw;
     bool link_active = false;
     s32 ret_val = 0;
-    
+
     /* get_link_status is set on LSC (link status) interrupt or
      * Rx sequence error interrupt.  get_link_status will stay
          * true until the check_for_link establishes link
@@ -1636,13 +1669,13 @@ bool IntelMausi::intelCheckLink(struct e1000_adapter *adapter)
         case e1000_media_type_unknown:
             break;
     }
-    
+
     if ((ret_val == -E1000_ERR_PHY) && (hw->phy.type == e1000_phy_igp_3) &&
         (intelReadMem32(E1000_CTRL) & E1000_PHY_CTRL_GBE_DISABLE)) {
         /* See e1000_kmrn_lock_loss_workaround_ich8lan() */
         IOLog("[IntelMausi]: Gigabit has been disabled, downgrading speed.\n");
     }
-    
+
     return link_active;
 }
 
@@ -1650,49 +1683,52 @@ bool IntelMausi::intelCheckLink(struct e1000_adapter *adapter)
 /**
  * intelPhyReadStatus - Update the PHY register status snapshot
  * @adapter: board private structure
+ *
  * Reference: e1000_phy_read_status(struct e1000_adapter *adapter)
- **/
+ */
 void IntelMausi::intelPhyReadStatus(struct e1000_adapter *adapter)
 {
-	struct e1000_hw *hw = &adapter->hw;
-	struct e1000_phy_regs *phy = &adapter->phy_regs;
-    
-    
-	if ((intelReadMem32(E1000_STATUS) & E1000_STATUS_LU) &&
-	    (adapter->hw.phy.media_type == e1000_media_type_copper)) {
-		int ret_val;
-        
-		ret_val = e1e_rphy(hw, MII_BMCR, &phy->bmcr);
-		ret_val |= e1e_rphy(hw, MII_BMSR, &phy->bmsr);
-		ret_val |= e1e_rphy(hw, MII_ADVERTISE, &phy->advertise);
-		ret_val |= e1e_rphy(hw, MII_LPA, &phy->lpa);
-		ret_val |= e1e_rphy(hw, MII_EXPANSION, &phy->expansion);
-		ret_val |= e1e_rphy(hw, MII_CTRL1000, &phy->ctrl1000);
-		ret_val |= e1e_rphy(hw, MII_STAT1000, &phy->stat1000);
-		ret_val |= e1e_rphy(hw, MII_ESTATUS, &phy->estatus);
-        
-		if (ret_val)
-			IOLog("[IntelMausi]: Error reading PHY register.\n");
-	} else {
-		/* Do not read PHY registers if link is not up
-		 * Set values to typical power-on defaults
-		 */
-		phy->bmcr = (BMCR_SPEED1000 | BMCR_ANENABLE | BMCR_FULLDPLX);
-		phy->bmsr = (BMSR_100FULL | BMSR_100HALF | BMSR_10FULL |
+    struct e1000_hw *hw = &adapter->hw;
+    struct e1000_phy_regs *phy = &adapter->phy_regs;
+
+
+    if ((intelReadMem32(E1000_STATUS) & E1000_STATUS_LU) &&
+        (adapter->hw.phy.media_type == e1000_media_type_copper)) {
+        int ret_val;
+
+        ret_val = e1e_rphy(hw, MII_BMCR, &phy->bmcr);
+        ret_val |= e1e_rphy(hw, MII_BMSR, &phy->bmsr);
+        ret_val |= e1e_rphy(hw, MII_ADVERTISE, &phy->advertise);
+        ret_val |= e1e_rphy(hw, MII_LPA, &phy->lpa);
+        ret_val |= e1e_rphy(hw, MII_EXPANSION, &phy->expansion);
+        ret_val |= e1e_rphy(hw, MII_CTRL1000, &phy->ctrl1000);
+        ret_val |= e1e_rphy(hw, MII_STAT1000, &phy->stat1000);
+        ret_val |= e1e_rphy(hw, MII_ESTATUS, &phy->estatus);
+
+        if (ret_val)
+            IOLog("[IntelMausi]: Error reading PHY register.\n");
+    } else {
+        /* Do not read PHY registers if link is not up
+         * Set values to typical power-on defaults
+         */
+        phy->bmcr = (BMCR_SPEED1000 | BMCR_ANENABLE | BMCR_FULLDPLX);
+        phy->bmsr = (BMSR_100FULL | BMSR_100HALF | BMSR_10FULL |
                      BMSR_10HALF | BMSR_ESTATEN | BMSR_ANEGCAPABLE |
                      BMSR_ERCAP);
-		phy->advertise = (ADVERTISE_PAUSE_ASYM | ADVERTISE_PAUSE_CAP |
+        phy->advertise = (ADVERTISE_PAUSE_ASYM | ADVERTISE_PAUSE_CAP |
                           ADVERTISE_ALL | ADVERTISE_CSMA);
-		phy->lpa = 0;
-		phy->expansion = EXPANSION_ENABLENPAGE;
-		phy->ctrl1000 = ADVERTISE_1000FULL;
-		phy->stat1000 = 0;
-		phy->estatus = (ESTATUS_1000_TFULL | ESTATUS_1000_THALF);
-	}
+        phy->lpa = 0;
+        phy->expansion = EXPANSION_ENABLENPAGE;
+        phy->ctrl1000 = ADVERTISE_1000FULL;
+        phy->stat1000 = 0;
+        phy->estatus = (ESTATUS_1000_TFULL | ESTATUS_1000_THALF);
+    }
 }
 
 
 /**
+ * intelInitPhyWakeup
+ *
  * Reference: e1000_init_phy_wakeup
  */
 void IntelMausi::intelInitPhyWakeup(UInt32 wufc, struct IntelAddrData *addrData)
@@ -1747,36 +1783,36 @@ void IntelMausi::intelInitPhyWakeup(UInt32 wufc, struct IntelAddrData *addrData)
     mac_reg = intelReadMem32(E1000_CTRL);
     if (mac_reg & E1000_CTRL_RFCE)
         phy_reg |= BM_RCTL_RFCE;
-    
+
     if (enableWoM) {
         /* Disable slave access to activate filters */
         phy_reg &= ~BM_RCTL_SAE;
     }
-    
+
     /* Configure PHY rx control */
     DebugLog("[IntelMausi]: PHY RCTL = 0x%04x.\n", phy_reg);
     hw->phy.ops.write_reg_page(hw, BM_RCTL, phy_reg);
-    
+
     wuc = E1000_WUC_PME_EN;
     if (wufc & (E1000_WUFC_MAG | E1000_WUFC_LNKC))
         wuc |= E1000_WUC_APME;
-    
+
     if (enableWoM) {
         /*
          * Enable wakeup by ARP request and directed IPv4/IPv6 packets.
          */
         if (addrData->ipV4Count > 0)
             wufc |= (E1000_WUFC_EX | E1000_WUFC_ARP | E1000_WUFC_IP4);
-        
+
         if (addrData->ipV6Count > 0)
             wufc |= (E1000_WUFC_EX | E1000_WUFC_IP6);
     }
-    
+
     /* enable PHY wakeup in MAC register */
     intelWriteMem32(E1000_WUFC, wufc);
     intelWriteMem32(E1000_WUC, (E1000_WUC_PHY_WAKE | E1000_WUC_APMPME |
            E1000_WUC_PME_STATUS | wuc));
-    
+
     if (enableWoM) {
         /*
          * Setup IPv4 and IPv6 wakeup address registers with the
@@ -1784,11 +1820,11 @@ void IntelMausi::intelInitPhyWakeup(UInt32 wufc, struct IntelAddrData *addrData)
          */
         av = 0x0000;
         num = (addrData->ipV4Count > kMaxAddrV4) ? kMaxAddrV4 : addrData->ipV4Count;
-        
+
         for (i = 0; i < num; i++) {
             //av |= BIT(i + 1);
             ad = addrData->ipV4Addr[i];
-            
+
             hw->phy.ops.write_reg_page(hw, BM_IP4AT0(i), (u16)(ad & 0xFFFF));
             hw->phy.ops.write_reg_page(hw, BM_IP4AT1(i), (u16)((ad >> 16) & 0xFFFF));
         }
@@ -1796,19 +1832,19 @@ void IntelMausi::intelInitPhyWakeup(UInt32 wufc, struct IntelAddrData *addrData)
 
         for (i = 0; i < num; i++) {
             av |= BIT(7 - i);
-            
+
             ad = addrData->ipV6Addr[i].s6_addr32[0];
             hw->phy.ops.write_reg_page(hw, BM_IP6AT0(i), (u16)(ad & 0xFFFF));
             hw->phy.ops.write_reg_page(hw, BM_IP6AT1(i), (u16)((ad >> 16) & 0xFFFF));
-            
+
             ad = addrData->ipV6Addr[i].s6_addr32[1];
             hw->phy.ops.write_reg_page(hw, BM_IP6AT2(i), (u16)(ad & 0xFFFF));
             hw->phy.ops.write_reg_page(hw, BM_IP6AT3(i), (u16)((ad >> 16) & 0xFFFF));
-            
+
             ad = addrData->ipV6Addr[i].s6_addr32[2];
             hw->phy.ops.write_reg_page(hw, BM_IP6AT4(i), (u16)(ad & 0xFFFF));
             hw->phy.ops.write_reg_page(hw, BM_IP6AT5(i), (u16)((ad >> 16) & 0xFFFF));
-            
+
             ad = addrData->ipV6Addr[i].s6_addr32[3];
             hw->phy.ops.write_reg_page(hw, BM_IP6AT6(i), (u16)(ad & 0xFFFF));
             hw->phy.ops.write_reg_page(hw, BM_IP6AT7(i), (u16)((ad >> 16) & 0xFFFF));
@@ -1823,27 +1859,30 @@ void IntelMausi::intelInitPhyWakeup(UInt32 wufc, struct IntelAddrData *addrData)
         hw->phy.ops.write_reg_page(hw, BM_IPAV, av);
         DebugLog("[IntelMausi]: PHY IPAV = 0x%04x.\n", av);
     }
-    
+
     DebugLog("[IntelMausi]: PHY WUFC = 0x%04x.\n", wufc);
     DebugLog("[IntelMausi]: PHY WUC = 0x%04x.\n", wuc);
 
     /* Configure and enable PHY wakeup in PHY registers */
     hw->phy.ops.write_reg_page(hw, BM_WUFC, wufc);
     hw->phy.ops.write_reg_page(hw, BM_WUC, wuc);
-    
+
     /* activate PHY wakeup */
     wuc_enable |= BM_WUC_ENABLE_BIT | BM_WUC_HOST_WU_BIT;
     retval = e1000_disable_phy_wakeup_reg_access_bm(hw, &wuc_enable);
-    
+
     if (retval) {
         DebugLog("[IntelMausi]: Failed to set PHY Host Wakeup bit.\n");
     }
-    
+
 release:
     hw->phy.ops.release(hw);
 }
 
 
+/**
+ * intelInitMacWakeup
+ */
 void IntelMausi::intelInitMacWakeup(UInt32 wufc, struct IntelAddrData *addrData)
 {
     if (enableWoM) {
@@ -1851,11 +1890,11 @@ void IntelMausi::intelInitMacWakeup(UInt32 wufc, struct IntelAddrData *addrData)
         /* Enable wakeup by ARP request and directed IPv4 packets. */
         if (addrData->ipV4Count > 0)
             wufc |= (E1000_WUFC_EX | E1000_WUFC_ARP | E1000_WUFC_IP4);
-        
+
         /* Configure IPv4 wakeup address registers. */
         av = 0;
         num = (addrData->ipV4Count > kMaxAddrV4) ? kMaxAddrV4 : addrData->ipV4Count;
-        
+
         for (i = 0; i < num; i++) {
             av |= BIT(i + 1);
             intelWriteMem32(E1000_IP4AT(i), addrData->ipV4Addr[i]);
@@ -1877,83 +1916,86 @@ void IntelMausi::intelInitMacWakeup(UInt32 wufc, struct IntelAddrData *addrData)
 }
 
 
+/**
+ * intelSetupAdvForMedium
+ */
 void IntelMausi::intelSetupAdvForMedium(const IONetworkMedium *medium)
 {
     struct e1000_hw *hw = &adapterData.hw;
     struct e1000_mac_info *mac = &hw->mac;
-    
+
     if (adapterData.flags2 & FLAG2_HAS_EEE)
         hw->dev_spec.ich8lan.eee_disable = true;
-    
+
     switch (medium->getIndex()) {
         case MEDIUM_INDEX_10HD:
             mac->forced_speed_duplex = ADVERTISE_10_HALF;
             hw->mac.autoneg = 0;
             break;
-            
+
         case MEDIUM_INDEX_10FD:
             mac->forced_speed_duplex = ADVERTISE_10_FULL;
             hw->mac.autoneg = 0;
             break;
-            
+
         case MEDIUM_INDEX_100HD:
             hw->phy.autoneg_advertised = ADVERTISED_100baseT_Half;
             hw->mac.autoneg = 1;
             hw->fc.requested_mode = e1000_fc_none;
             break;
-            
+
         case MEDIUM_INDEX_100FD:
             hw->phy.autoneg_advertised = ADVERTISED_100baseT_Full;
             hw->mac.autoneg = 1;
             hw->fc.requested_mode = e1000_fc_none;
             break;
-            
+
         case MEDIUM_INDEX_100FDFC:
             hw->phy.autoneg_advertised = ADVERTISED_100baseT_Full;
             hw->mac.autoneg = 1;
             hw->fc.requested_mode = e1000_fc_full;
             break;
-            
+
         case MEDIUM_INDEX_1000FD:
             hw->phy.autoneg_advertised = ADVERTISED_1000baseT_Full;
             hw->mac.autoneg = 1;
             hw->fc.requested_mode = e1000_fc_none;
             break;
-            
+
         case MEDIUM_INDEX_1000FDFC:
             hw->phy.autoneg_advertised = ADVERTISED_1000baseT_Full;
             hw->mac.autoneg = 1;
             hw->fc.requested_mode = e1000_fc_full;
             break;
-            
+
         case MEDIUM_INDEX_1000FDEEE:
             hw->phy.autoneg_advertised = ADVERTISED_1000baseT_Full;
             hw->mac.autoneg = 1;
             hw->fc.requested_mode = e1000_fc_none;
             hw->dev_spec.ich8lan.eee_disable = false;
             break;
-            
+
         case MEDIUM_INDEX_1000FDFCEEE:
             hw->phy.autoneg_advertised = ADVERTISED_1000baseT_Full;
             hw->mac.autoneg = 1;
             hw->fc.requested_mode = e1000_fc_full;
             hw->dev_spec.ich8lan.eee_disable = false;
             break;
-            
+
         case MEDIUM_INDEX_100FDEEE:
             hw->phy.autoneg_advertised = ADVERTISED_100baseT_Full;
             hw->mac.autoneg = 1;
             hw->fc.requested_mode = e1000_fc_none;
             hw->dev_spec.ich8lan.eee_disable = false;
             break;
-            
+
         case MEDIUM_INDEX_100FDFCEEE:
             hw->phy.autoneg_advertised = ADVERTISED_100baseT_Full;
             hw->mac.autoneg = 1;
             hw->fc.requested_mode = e1000_fc_full;
             hw->dev_spec.ich8lan.eee_disable = false;
             break;
-            
+
         default:
             if (hw->phy.media_type == e1000_media_type_fiber) {
                 hw->phy.autoneg_advertised = ADVERTISED_1000baseT_Full | ADVERTISED_FIBRE | ADVERTISED_Autoneg;
@@ -1962,10 +2004,10 @@ void IntelMausi::intelSetupAdvForMedium(const IONetworkMedium *medium)
                                               ADVERTISED_100baseT_Full | ADVERTISED_100baseT_Half |
                                               ADVERTISED_1000baseT_Full | ADVERTISED_Autoneg |
                                               ADVERTISED_TP | ADVERTISED_MII);
-                
+
                 if (adapterData.fc_autoneg)
                     hw->fc.requested_mode = e1000_fc_default;
-                
+
                 if (adapterData.flags2 & FLAG2_HAS_EEE)
                     hw->dev_spec.ich8lan.eee_disable = false;
             }
@@ -1978,41 +2020,46 @@ void IntelMausi::intelSetupAdvForMedium(const IONetworkMedium *medium)
 
 
 /**
+ * intelFlushLPIC
+ *
  * Reference: e1000e_flush_lpic
  */
 void IntelMausi::intelFlushLPIC()
 {
     struct e1000_hw *hw = &adapterData.hw;
     u32 ret_val;
-    
+
     /* Flush LPIC. */
     ret_val = hw->phy.ops.acquire(hw);
-    
+
     if (ret_val)
         return;
 
     DebugLog("[IntelMausi]: LPIC=0x%08x.\n", intelReadMem32(E1000_LPIC));
-    
+
     DebugLog("[IntelMausi]: EEE TX LPI TIMER: 0x%08x.\n", intelReadMem32(E1000_LPIC) >> E1000_LPIC_LPIET_SHIFT);
 
     hw->phy.ops.release(hw);
 }
 
 
+/**
+ * setMaxLatency
+ */
 void IntelMausi::setMaxLatency(UInt32 linkSpeed)
 {
     struct e1000_hw *hw = &adapterData.hw;
     UInt32 rxa = intelReadMem32(E1000_PBA) & E1000_PBA_RXA_MASK;
     UInt32 latency;
-    
+
     rxa = rxa << 9;
     latency = (rxa > hw->adapter->max_frame_size) ? (rxa - hw->adapter->max_frame_size) * (16000 / linkSpeed) : 0;
-    
+
     if (maxLatency && (latency > maxLatency))
         latency = maxLatency;
-    
+
     requireMaxBusStall(latency);
-    
+
     DebugLog("[IntelMausi]: requireMaxBusStall(%uns).\n", latency);
 }
 
@@ -2028,40 +2075,40 @@ UInt16 IntelMausi::intelSupportsEEE(struct e1000_adapter *adapter)
 
     if (!(adapter->flags2 & FLAG2_HAS_EEE))
         goto done;
-    
+
     dev_spec = &hw->dev_spec.ich8lan;
-    
+
     if (hw->dev_spec.ich8lan.eee_disable)
         goto done;
-    
+
     switch (hw->phy.type) {
         case e1000_phy_82579:
             lpa = I82579_EEE_LP_ABILITY;
             advAddr = I82579_EEE_ADVERTISEMENT;
             break;
-            
+
         case e1000_phy_i217:
             lpa = I217_EEE_LP_ABILITY;
             advAddr = I217_EEE_ADVERTISEMENT;
             break;
-            
+
         default:
             goto done;
     }
     error = hw->phy.ops.acquire(hw);
-    
+
     if (error)
         goto done;
 
     /* Save off link partner's EEE ability */
     error = e1000_read_emi_reg_locked(hw, lpa, &dev_spec->eee_lp_ability);
-    
+
     if (error)
         goto release;
-    
+
     /* Read EEE advertisement */
     error = e1000_read_emi_reg_locked(hw, advAddr, &adv);
-    
+
     if (error)
         goto release;
 
@@ -2070,7 +2117,7 @@ UInt16 IntelMausi::intelSupportsEEE(struct e1000_adapter *adapter)
      */
     if (adv & dev_spec->eee_lp_ability & I82579_EEE_1000_SUPPORTED)
         result |= I82579_LPI_CTRL_1000_ENABLE;
-    
+
     if (adv & dev_spec->eee_lp_ability & I82579_EEE_100_SUPPORTED)
         result |= I82579_LPI_CTRL_100_ENABLE;
 
@@ -2093,21 +2140,21 @@ SInt32 IntelMausi::intelEnableEEE(struct e1000_hw *hw, UInt16 mode)
         case e1000_phy_82579:
             pcsStatus = I82579_EEE_PCS_STATUS;
             break;
-            
+
         case e1000_phy_i217:
             pcsStatus = I217_EEE_PCS_STATUS;
             break;
-            
+
         default:
             goto done;
     }
     error = hw->phy.ops.acquire(hw);
-    
+
     if (error)
         goto done;
-    
+
     error = e1e_rphy_locked(hw, I82579_LPI_CTRL, &lpiCtrl);
-    
+
     if (error)
         goto release;
 
@@ -2116,28 +2163,28 @@ SInt32 IntelMausi::intelEnableEEE(struct e1000_hw *hw, UInt16 mode)
 
     /* Set the new EEE mode. */
     lpiCtrl |= mode;
-    
+
     if (hw->phy.type == e1000_phy_82579) {
         error = e1000_read_emi_reg_locked(hw, I82579_LPI_PLL_SHUT, &data);
-        
+
         if (error)
             goto release;
-        
+
         data &= ~I82579_LPI_100_PLL_SHUT;
         e1000_write_emi_reg_locked(hw, I82579_LPI_PLL_SHUT, data);
     }
-    
+
     /* R/Clr IEEE MMD 3.1 bits 11:10 - Tx/Rx LPI Received */
     error = e1000_read_emi_reg_locked(hw, pcsStatus, &data);
-    
+
     if (error)
         goto release;
-    
+
     error = e1e_wphy_locked(hw, I82579_LPI_CTRL, lpiCtrl);
-    
+
 release:
     hw->phy.ops.release(hw);
-    
+
 done:
     return error;
 }

@@ -29,7 +29,7 @@ extern "C" {
 #define DebugLog(args...)
 #endif
 
-#define	RELEASE(x)	if(x){(x)->release();(x)=NULL;}
+#define    RELEASE(x)    if(x){(x)->release();(x)=NULL;}
 
 #define intelWriteMem8(reg, val8)       _OSWriteInt8((baseAddr), (reg), (val8))
 #define intelWriteMem16(reg, val16)     OSWriteLittleInt16((baseAddr), (reg), (val16))
@@ -46,10 +46,10 @@ extern "C" {
 
 enum
 {
-	MEDIUM_INDEX_AUTO = 0,
-	MEDIUM_INDEX_10HD,
-	MEDIUM_INDEX_10FD,
-	MEDIUM_INDEX_100HD,
+    MEDIUM_INDEX_AUTO = 0,
+    MEDIUM_INDEX_10HD,
+    MEDIUM_INDEX_10FD,
+    MEDIUM_INDEX_100HD,
     MEDIUM_INDEX_100FD,
     MEDIUM_INDEX_100FDFC,
     MEDIUM_INDEX_1000FD,
@@ -58,7 +58,7 @@ enum
     MEDIUM_INDEX_1000FDFCEEE,
     MEDIUM_INDEX_100FDEEE,
     MEDIUM_INDEX_100FDFCEEE,
-	MEDIUM_INDEX_COUNT
+    MEDIUM_INDEX_COUNT
 };
 
 #define MBit 1000000
@@ -167,20 +167,20 @@ enum {
 
 /* mask to determine if packets should be dropped due to frame errors */
 #define E1000_RXDLGC_ERR_FRAME_ERR_MASK ( \
-    E1000_RXDLGC_ERR_CE  |		\
-    E1000_RXDLGC_ERR_SE  |		\
-    E1000_RXDLGC_ERR_SEQ |		\
-    E1000_RXDLGC_ERR_CXE |		\
+    E1000_RXDLGC_ERR_CE  |        \
+    E1000_RXDLGC_ERR_SE  |        \
+    E1000_RXDLGC_ERR_SEQ |        \
+    E1000_RXDLGC_ERR_CXE |        \
     E1000_RXDLGC_ERR_RXE)
 
-#define E1000_TX_FLAGS_CSUM		0x00000001
-#define E1000_TX_FLAGS_VLAN		0x00000002
-#define E1000_TX_FLAGS_TSO		0x00000004
-#define E1000_TX_FLAGS_IPV4		0x00000008
-#define E1000_TX_FLAGS_NO_FCS		0x00000010
-#define E1000_TX_FLAGS_HWTSTAMP		0x00000020
-#define E1000_TX_FLAGS_VLAN_MASK	0xffff0000
-#define E1000_TX_FLAGS_VLAN_SHIFT	16
+#define E1000_TX_FLAGS_CSUM        0x00000001
+#define E1000_TX_FLAGS_VLAN        0x00000002
+#define E1000_TX_FLAGS_TSO        0x00000004
+#define E1000_TX_FLAGS_IPV4        0x00000008
+#define E1000_TX_FLAGS_NO_FCS        0x00000010
+#define E1000_TX_FLAGS_HWTSTAMP        0x00000020
+#define E1000_TX_FLAGS_VLAN_MASK    0xffff0000
+#define E1000_TX_FLAGS_VLAN_SHIFT    16
 
 #define E1000_TXD_OPTS_IXSM     0x00000100
 #define E1000_TXD_OPTS_TXSM     0x00000200
@@ -302,22 +302,22 @@ struct IntelAddrData {
 
 class IntelMausi : public super
 {
-	
-	OSDeclareDefaultStructors(IntelMausi)
-	
+
+    OSDeclareDefaultStructors(IntelMausi)
+
 public:
-	/* IOService (or its superclass) methods. */
-	virtual bool start(IOService *provider) APPLE_KEXT_OVERRIDE;
-	virtual void stop(IOService *provider) APPLE_KEXT_OVERRIDE;
-	virtual bool init(OSDictionary *properties) APPLE_KEXT_OVERRIDE;
-	virtual void free() APPLE_KEXT_OVERRIDE;
-	
-	/* Power Management Support */
-	virtual IOReturn registerWithPolicyMaker(IOService *policyMaker) APPLE_KEXT_OVERRIDE;
+    /* IOService (or its superclass) methods. */
+    virtual bool start(IOService *provider) APPLE_KEXT_OVERRIDE;
+    virtual void stop(IOService *provider) APPLE_KEXT_OVERRIDE;
+    virtual bool init(OSDictionary *properties) APPLE_KEXT_OVERRIDE;
+    virtual void free() APPLE_KEXT_OVERRIDE;
+
+    /* Power Management Support */
+    virtual IOReturn registerWithPolicyMaker(IOService *policyMaker) APPLE_KEXT_OVERRIDE;
     virtual IOReturn setPowerState(unsigned long powerStateOrdinal, IOService *policyMaker) APPLE_KEXT_OVERRIDE;
-	virtual void systemWillShutdown(IOOptionBits specifier) APPLE_KEXT_OVERRIDE;
-    
-	/* IONetworkController methods. */
+    virtual void systemWillShutdown(IOOptionBits specifier) APPLE_KEXT_OVERRIDE;
+
+    /* IONetworkController methods. */
     virtual IOReturn enable(IONetworkInterface *netif) APPLE_KEXT_OVERRIDE;
     virtual IOReturn disable(IONetworkInterface *netif) APPLE_KEXT_OVERRIDE;
     virtual IOReturn enable(IOKernelDebugger *debugger) APPLE_KEXT_OVERRIDE;
@@ -333,31 +333,31 @@ public:
 #else
     virtual UInt32 outputPacket(mbuf_t m, void *param) APPLE_KEXT_OVERRIDE;
 #endif /* __PRIVATE_SPI__ */
-	
-	virtual void getPacketBufferConstraints(IOPacketBufferConstraints *constraints) const APPLE_KEXT_OVERRIDE;
-	
-	virtual IOOutputQueue* createOutputQueue() APPLE_KEXT_OVERRIDE;
-	
-	virtual const OSString* newVendorString() const APPLE_KEXT_OVERRIDE;
-	virtual const OSString* newModelString() const APPLE_KEXT_OVERRIDE;
-	
-	virtual IOReturn selectMedium(const IONetworkMedium *medium) APPLE_KEXT_OVERRIDE;
-	virtual bool configureInterface(IONetworkInterface *interface) APPLE_KEXT_OVERRIDE;
-	
-	virtual bool createWorkLoop() APPLE_KEXT_OVERRIDE;
-	virtual IOWorkLoop* getWorkLoop() const APPLE_KEXT_OVERRIDE;
-	
-	/* Methods inherited from IOEthernetController. */
-	virtual IOReturn getHardwareAddress(IOEthernetAddress *addr) APPLE_KEXT_OVERRIDE;
-	virtual IOReturn setHardwareAddress(const IOEthernetAddress *addr) APPLE_KEXT_OVERRIDE;
-	virtual IOReturn setPromiscuousMode(bool active) APPLE_KEXT_OVERRIDE;
-	virtual IOReturn setMulticastMode(bool active) APPLE_KEXT_OVERRIDE;
-	virtual IOReturn setMulticastList(IOEthernetAddress *addrs, UInt32 count) APPLE_KEXT_OVERRIDE;
-	virtual IOReturn getChecksumSupport(UInt32 *checksumMask, UInt32 checksumFamily, bool isOutput) APPLE_KEXT_OVERRIDE;
-	virtual IOReturn getMinPacketSize(UInt32 *minSize) const APPLE_KEXT_OVERRIDE;
+
+    virtual void getPacketBufferConstraints(IOPacketBufferConstraints *constraints) const APPLE_KEXT_OVERRIDE;
+
+    virtual IOOutputQueue* createOutputQueue() APPLE_KEXT_OVERRIDE;
+
+    virtual const OSString* newVendorString() const APPLE_KEXT_OVERRIDE;
+    virtual const OSString* newModelString() const APPLE_KEXT_OVERRIDE;
+
+    virtual IOReturn selectMedium(const IONetworkMedium *medium) APPLE_KEXT_OVERRIDE;
+    virtual bool configureInterface(IONetworkInterface *interface) APPLE_KEXT_OVERRIDE;
+
+    virtual bool createWorkLoop() APPLE_KEXT_OVERRIDE;
+    virtual IOWorkLoop* getWorkLoop() const APPLE_KEXT_OVERRIDE;
+
+    /* Methods inherited from IOEthernetController. */
+    virtual IOReturn getHardwareAddress(IOEthernetAddress *addr) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn setHardwareAddress(const IOEthernetAddress *addr) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn setPromiscuousMode(bool active) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn setMulticastMode(bool active) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn setMulticastList(IOEthernetAddress *addrs, UInt32 count) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn getChecksumSupport(UInt32 *checksumMask, UInt32 checksumFamily, bool isOutput) APPLE_KEXT_OVERRIDE;
+    virtual IOReturn getMinPacketSize(UInt32 *minSize) const APPLE_KEXT_OVERRIDE;
     virtual IOReturn setWakeOnMagicPacket(bool active) APPLE_KEXT_OVERRIDE;
     virtual IOReturn getPacketFilters(const OSSymbol *group, UInt32 *filters) const APPLE_KEXT_OVERRIDE;
-    
+
     virtual UInt32 getFeatures() const APPLE_KEXT_OVERRIDE;
     virtual IOReturn getMaxPacketSize(UInt32 * maxSize) const APPLE_KEXT_OVERRIDE;
     virtual IOReturn setMaxPacketSize(UInt32 maxSize) APPLE_KEXT_OVERRIDE;
@@ -393,15 +393,15 @@ private:
     void setLinkUp();
     void setLinkDown();
     bool checkForDeadlock();
-    
+
     /* Jumbo frame support methods */
     void discardPacketFragment(bool extended = false);
-    
+
     /* Hardware specific methods */
     bool intelIdentifyChip();
     bool intelStart();
     void intelEEPROMChecks(struct e1000_adapter *adapter);
-    void intelEnableIRQ(UInt32 newMask);
+    void intelEnableIRQ(struct e1000_adapter *adapter);
     void intelDisableIRQ();
     void intelUpdateTxDescTail(UInt32 index);
     void intelUpdateRxDescTail(UInt32 index);
@@ -436,33 +436,33 @@ private:
     void intelSetupAdvForMedium(const IONetworkMedium *medium);
     void intelFlushLPIC();
     void setMaxLatency(UInt32 linkSpeed);
-    
+
     UInt16 intelSupportsEEE(struct e1000_adapter *adapter);
     SInt32 intelEnableEEE(struct e1000_hw *hw, UInt16 mode);
-    
+
     inline void intelGetChecksumResult(mbuf_t m, UInt32 status);
 
     void getAddressList(struct IntelAddrData *addr);
 
     /* timer action */
     void timerAction(IOTimerEventSource *timer);
-    
+
 private:
-	IOWorkLoop *workLoop;
+    IOWorkLoop *workLoop;
     IOCommandGate *commandGate;
-	IOPCIDevice *pciDevice;
-	OSDictionary *mediumDict;
-	IONetworkMedium *mediumTable[MEDIUM_INDEX_COUNT];
-	IOBasicOutputQueue *txQueue;
-	
-	IOInterruptEventSource *interruptSource;
-	IOTimerEventSource *timerSource;
-	IOEthernetInterface *netif;
-	IOMemoryMap *baseMap;
+    IOPCIDevice *pciDevice;
+    OSDictionary *mediumDict;
+    IONetworkMedium *mediumTable[MEDIUM_INDEX_COUNT];
+    IOBasicOutputQueue *txQueue;
+
+    IOInterruptEventSource *interruptSource;
+    IOTimerEventSource *timerSource;
+    IOEthernetInterface *netif;
+    IOMemoryMap *baseMap;
     volatile void *baseAddr;
-	IOMemoryMap *flashMap;
+    IOMemoryMap *flashMap;
     volatile void *flashAddr;
-    
+
     /* transmitter data */
     IODMACommand *txDescDmaCmd;
     IOBufferMemoryDescriptor *txBufDesc;
@@ -477,13 +477,13 @@ private:
     UInt16 txNextDescIndex;
     UInt16 txDirtyIndex;
     UInt16 txCleanBarrierIndex;
-    
+
     /* receiver data */
     IODMACommand *rxDescDmaCmd;
     IOBufferMemoryDescriptor *rxBufDesc;
     IOPhysicalAddress64 rxPhyAddr;
     union e1000_rx_desc_extended *rxDescArray;
-	IOMbufNaturalMemoryCursor *rxMbufCursor;
+    IOMbufNaturalMemoryCursor *rxMbufCursor;
     mbuf_t rxPacketHead;
     mbuf_t rxPacketTail;
     UInt32 rxPacketSize;
@@ -491,18 +491,17 @@ private:
     UInt32 mcListCount;
     UInt16 rxNextDescIndex;
     UInt16 rxCleanedCount;
-    
+
     /* power management data */
     unsigned long powerState;
-    
+
     /* statistics data */
     UInt32 deadlockWarn;
     IONetworkStats *netStats;
-	IOEthernetStats *etherStats;
-    
+    IOEthernetStats *etherStats;
+
     UInt32 chip;
     UInt32 chipType;
-    UInt32 intrMask;
     UInt32 intrThrValue10;
     UInt32 intrThrValue100;
     UInt32 intrThrValue1000;
@@ -520,7 +519,7 @@ private:
     UInt16 eeeMode;
     UInt8 pcieCapOffset;
     UInt8 pciPMCtrlOffset;
-    
+
     UInt8 rssHashKey[INTEL_RSS_KEY_LEN];
 
 #ifdef __PRIVATE_SPI__
@@ -530,8 +529,8 @@ private:
     /* flags */
     bool isRssSet;
     bool isEnabled;
-	bool promiscusMode;
-	bool multicastMode;
+    bool promiscusMode;
+    bool multicastMode;
     bool linkUp;
 
 #ifdef __PRIVATE_SPI__
@@ -545,7 +544,7 @@ private:
     bool wolActive;
     bool enableCSO6;
     bool enableWoM;
-    
+
     /* mbuf_t arrays */
     struct intelTxBufferInfo txBufArray[kNumTxDesc];
     struct intelRxBufferInfo rxBufArray[kNumRxDesc];

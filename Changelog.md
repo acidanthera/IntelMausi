@@ -19,6 +19,10 @@ IntelMausi Changelog
     * I219-V18
     * I219-LM19
     * I219-V19
+- Fixed WoL on I219 family devices
+- Use Random RSS key hash generation instead of static
+- Fix IRQ mask for Cannon-Point devices
+- Adjusted debug log
 
 #### v1.0.4
 - Added MacKernelSDK with Xcode 12 compatibility

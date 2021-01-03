@@ -567,7 +567,7 @@ void IntelMausi::clearDescriptors()
     mbuf_t m;
     UInt32 i;
     
-    DebugLog("clearDescriptors() ===>\n");
+    DebugLog("[IntelMausi]: clearDescriptors() ===>\n");
     
     /* First cleanup the tx descriptor ring. */
     for (i = 0; i < kNumTxDesc; i++) {
@@ -597,7 +597,7 @@ void IntelMausi::clearDescriptors()
     /* Free packet fragments which haven't been upstreamed yet.  */
     discardPacketFragment();
     
-    DebugLog("clearDescriptors() <===\n");
+    DebugLog("[IntelMausi]: clearDescriptors() <===\n");
 }
 
 void IntelMausi::discardPacketFragment(bool extended)

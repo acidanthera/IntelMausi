@@ -564,7 +564,7 @@ void IntelMausi::receivePacket(void *pkt, UInt32 *pktSizeOut, UInt32 timeout)
     while (!isReceived && costTime < timeout) {
         while (!isReceived && (OSSwapLittleToHostInt32(desc->wb.upper.status_error) & E1000_RXD_STAT_DD)) {
             if (!(isEnabled && linkUp) || forceReset) {
-                DebugLog("[IntelMausi]:receivePacket  Interface down. Waiting...\n");
+                DebugLog("[IntelMausi]: receivePacket  Interface down. Waiting...\n");
                 break;
             }
 
@@ -590,13 +590,13 @@ void IntelMausi::receivePacket(void *pkt, UInt32 *pktSizeOut, UInt32 timeout)
                 }
 
                 if (usedSize != pktSize) {
-                    DebugLog("[IntelMausi]:receivePacket  invalid packet %u vs %u in %u chunks.\n", usedSize, pktSize, counter);
+                    DebugLog("[IntelMausi]: receivePacket  invalid packet %u vs %u in %u chunks.\n", usedSize, pktSize, counter);
                 } else if (isKdpPacket((UInt8 *)pkt, usedSize)) {
                     *pktSizeOut = usedSize;
                     isReceived = true;
                 }
             } else {
-                DebugLog("[IntelMausi]:receivePacket  drop out of range packet  pktSize %u.\n", pktSize);
+                DebugLog("[IntelMausi]: receivePacket  drop out of range packet  pktSize %u.\n", pktSize);
             }
 
             /* Update the descriptor and get the next one to examine. */
@@ -813,7 +813,7 @@ IOReturn IntelMausi::driverEnable()
 {
     IOReturn result = kIOReturnError;
     
-    DebugLog("enable() ===>\n");
+    DebugLog("[IntelMausi]: enable() ===>\n");
     
     if (isEnabled) {
         DebugLog("[IntelMausi]: Interface already enabled.\n");
@@ -850,7 +850,7 @@ IOReturn IntelMausi::driverEnable()
 
     result = kIOReturnSuccess;
     
-    DebugLog("enable() <===\n");
+    DebugLog("[IntelMausi]: enable() <===\n");
 
 done:
     return result;
@@ -860,7 +860,7 @@ IOReturn IntelMausi::driverDisable()
 {
     IOReturn result = kIOReturnSuccess;
     
-    DebugLog("disable() ===>\n");
+    DebugLog("[IntelMausi]: disable() ===>\n");
     
     if (!isEnabled)
         goto done;
@@ -898,7 +898,7 @@ IOReturn IntelMausi::driverDisable()
     if (pciDevice && pciDevice->isOpen())
         pciDevice->close(this);
     
-    DebugLog("disable() <===\n");
+    DebugLog("[IntelMausi]: disable() <===\n");
     
 done:
     return result;
@@ -930,7 +930,7 @@ IOReturn IntelMausi::outputStart(IONetworkInterface *interface, IOOptionBits opt
     UInt16 i;
     UInt16 count;
 
-    //DebugLog("outputStart() ===>\n");
+    //DebugLog("[IntelMausi]: outputStart() ===>\n");
     count = 0;
     
     if (!(isEnabled && linkUp) || forceReset) {
@@ -1062,7 +1062,7 @@ IOReturn IntelMausi::outputStart(IONetworkInterface *interface, IOOptionBits opt
     
     result = (txNumFreeDesc >= (kMaxSegs + kTxSpareDescs)) ? kIOReturnSuccess : kIOReturnNoResources;
     
-    //DebugLog("outputStart() <===\n");
+    //DebugLog("[IntelMausi]: outputStart() <===\n");
     
 done:
     return result;
@@ -1092,7 +1092,7 @@ UInt32 IntelMausi::outputPacket(mbuf_t m, void *param)
     UInt16 vlanTag;
     UInt16 i;
 
-    //DebugLog("outputPacket() ===>\n");
+    //DebugLog("[IntelMausi]: outputPacket() ===>\n");
 
     if (!(isEnabled && linkUp) || forceReset) {
         DebugLog("[IntelMausi]: Interface down. Dropping packet.\n");
@@ -1249,7 +1249,7 @@ UInt32 IntelMausi::outputPacket(mbuf_t m, void *param)
     result = kIOReturnOutputSuccess;
 
 done:
-    //DebugLog("outputPacket() <===\n");
+    //DebugLog("[IntelMausi]: outputPacket() <===\n");
 
     return result;
 
@@ -1262,36 +1262,36 @@ error:
 
 void IntelMausi::getPacketBufferConstraints(IOPacketBufferConstraints *constraints) const
 {
-    DebugLog("getPacketBufferConstraints() ===>\n");
+    DebugLog("[IntelMausi]: getPacketBufferConstraints() ===>\n");
     
 	constraints->alignStart = kIOPacketBufferAlign1;
 	constraints->alignLength = kIOPacketBufferAlign1;
     
-    DebugLog("getPacketBufferConstraints() <===\n");
+    DebugLog("[IntelMausi]: getPacketBufferConstraints() <===\n");
 }
 
 IOOutputQueue* IntelMausi::createOutputQueue()
 {
-    DebugLog("createOutputQueue() ===>\n");
+    DebugLog("[IntelMausi]: createOutputQueue() ===>\n");
     
-    DebugLog("createOutputQueue() <===\n");
+    DebugLog("[IntelMausi]: createOutputQueue() <===\n");
     
     return IOBasicOutputQueue::withTarget(this);
 }
 
 const OSString* IntelMausi::newVendorString() const
 {
-    DebugLog("newVendorString() ===>\n");
+    DebugLog("[IntelMausi]: newVendorString() ===>\n");
     
-    DebugLog("newVendorString() <===\n");
+    DebugLog("[IntelMausi]: newVendorString() <===\n");
     
     return OSString::withCString("Intel");
 }
 
 const OSString* IntelMausi::newModelString() const
 {
-    DebugLog("newModelString() ===>\n");
-    DebugLog("newModelString() <===\n");
+    DebugLog("[IntelMausi]: newModelString() ===>\n");
+    DebugLog("[IntelMausi]: newModelString() <===\n");
     
     return OSString::withCString(deviceTable[chip].deviceName);
 }
@@ -1306,7 +1306,7 @@ bool IntelMausi::configureInterface(IONetworkInterface *interface)
 
     bool result;
     
-    DebugLog("configureInterface() ===>\n");
+    DebugLog("[IntelMausi]: configureInterface() ===>\n");
     
     result = super::configureInterface(interface);
     
@@ -1359,27 +1359,27 @@ bool IntelMausi::configureInterface(IONetworkInterface *interface)
     setProperty("model", modelName);
     
 done:
-    DebugLog("configureInterface() <===\n");
+    DebugLog("[IntelMausi]: configureInterface() <===\n");
 
     return result;
 }
 
 bool IntelMausi::createWorkLoop()
 {
-    DebugLog("createWorkLoop() ===>\n");
+    DebugLog("[IntelMausi]: createWorkLoop() ===>\n");
     
     workLoop = IOWorkLoop::workLoop();
     
-    DebugLog("createWorkLoop() <===\n");
+    DebugLog("[IntelMausi]: createWorkLoop() <===\n");
     
     return workLoop ? true : false;
 }
 
 IOWorkLoop* IntelMausi::getWorkLoop() const
 {
-    DebugLog("getWorkLoop() ===>\n");
+    DebugLog("[IntelMausi]: getWorkLoop() ===>\n");
     
-    DebugLog("getWorkLoop() <===\n");
+    DebugLog("[IntelMausi]: getWorkLoop() <===\n");
     
     return workLoop;
 }
@@ -1389,7 +1389,7 @@ IOReturn IntelMausi::setPromiscuousMode(bool active)
     struct e1000_hw *hw = &adapterData.hw;
     UInt32 rxControl;
     
-    DebugLog("setPromiscuousMode() ===>\n");
+    DebugLog("[IntelMausi]: setPromiscuousMode() ===>\n");
     
     rxControl = intelReadMem32(E1000_RCTL);
     rxControl &= ~(E1000_RCTL_UPE | E1000_RCTL_MPE);
@@ -1404,7 +1404,7 @@ IOReturn IntelMausi::setPromiscuousMode(bool active)
     intelWriteMem32(E1000_RCTL, rxControl);
     promiscusMode = active;
 
-    DebugLog("setPromiscuousMode() <===\n");
+    DebugLog("[IntelMausi]: setPromiscuousMode() <===\n");
     
     return kIOReturnSuccess;
 }
@@ -1414,7 +1414,7 @@ IOReturn IntelMausi::setMulticastMode(bool active)
     struct e1000_hw *hw = &adapterData.hw;
     UInt32 rxControl;
 
-    DebugLog("setMulticastMode() ===>\n");
+    DebugLog("[IntelMausi]: setMulticastMode() ===>\n");
 
     rxControl = intelReadMem32(E1000_RCTL);
     rxControl &= ~(E1000_RCTL_UPE | E1000_RCTL_MPE);
@@ -1427,7 +1427,7 @@ IOReturn IntelMausi::setMulticastMode(bool active)
     intelWriteMem32(E1000_RCTL, rxControl);
     multicastMode = active;
 
-    DebugLog("setMulticastMode() <===\n");
+    DebugLog("[IntelMausi]: setMulticastMode() <===\n");
     
     return kIOReturnSuccess;
 }
@@ -2016,7 +2016,7 @@ void IntelMausi::interruptOccurred(OSObject *client, IOInterruptEventSource *src
 
 IOReturn IntelMausi::setInputPacketPollingEnable(IONetworkInterface *interface, bool enabled)
 {
-    //DebugLog("setInputPacketPollingEnable() ===>\n");
+    //DebugLog("[IntelMausi]: setInputPacketPollingEnable() ===>\n");
     
     if (isEnabled) {
         if (enabled) {
@@ -2027,16 +2027,16 @@ IOReturn IntelMausi::setInputPacketPollingEnable(IONetworkInterface *interface, 
         }
         polling = enabled;
     }
-    //DebugLog("input polling %s.\n", enabled ? "enabled" : "disabled");
+    //DebugLog("[IntelMausi]: input polling %s.\n", enabled ? "enabled" : "disabled");
     
-    //DebugLog("setInputPacketPollingEnable() <===\n");
+    //DebugLog("[IntelMausi]: setInputPacketPollingEnable() <===\n");
     
     return kIOReturnSuccess;
 }
 
 void IntelMausi::pollInputPackets(IONetworkInterface *interface, uint32_t maxCount, IOMbufQueue *pollQueue, void *context )
 {
-    //DebugLog("pollInputPackets() ===>\n");
+    //DebugLog("[IntelMausi]: pollInputPackets() ===>\n");
     
     if (polling) {
         rxInterrupt(interface, maxCount, pollQueue, context);
@@ -2045,7 +2045,7 @@ void IntelMausi::pollInputPackets(IONetworkInterface *interface, uint32_t maxCou
         txInterrupt();
     }
     
-    //DebugLog("pollInputPackets() <===\n");
+    //DebugLog("[IntelMausi]: pollInputPackets() <===\n");
 }
 
 #endif /* __PRIVATE_SPI__ */
@@ -2545,7 +2545,7 @@ bool IntelMausi::intelStart()
         
     intrMask = IMS_ENABLE_MASK;
     
-    if ((hw->mac.type == e1000_pch_lpt) || (hw->mac.type == e1000_pch_spt)) {
+    if (hw->mac.type >= e1000_pch_lpt) {
         intrMask |= E1000_IMS_ECCER;
     }
     DebugLog("[IntelMausi]: %s (Rev. %u), %02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -2593,7 +2593,7 @@ void IntelMausi::timerAction(IOTimerEventSource *timer)
 done:
     txDescDoneLast = txDescDoneCount;
     
-    //DebugLog("timerAction() <===\n");
+    //DebugLog("[IntelMausi]: timerAction() <===\n");
 }
 
 void IntelMausi::updateStatistics(struct e1000_adapter *adapter)

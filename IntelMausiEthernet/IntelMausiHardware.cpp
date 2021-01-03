@@ -23,6 +23,7 @@
 
 #pragma mark --- hardware initialization methods ---
 
+
 bool IntelMausi::initPCIConfigSpace(IOPCIDevice *provider)
 {
     UInt32 lat1, lat2;
@@ -95,6 +96,7 @@ error:
     goto done;
 }
 
+
 void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000_info *ei)
 {
 #ifdef DEBUG
@@ -150,6 +152,7 @@ void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000
     }
 }
 
+
 IOReturn IntelMausi::setPowerStateWakeAction(OSObject *owner, void *arg1, void *arg2, void *arg3, void *arg4)
 {
     IntelMausi *ethCtlr = OSDynamicCast(IntelMausi, owner);
@@ -175,6 +178,7 @@ IOReturn IntelMausi::setPowerStateWakeAction(OSObject *owner, void *arg1, void *
     }
     return kIOReturnSuccess;
 }
+
 
 IOReturn IntelMausi::setPowerStateSleepAction(OSObject *owner, void *arg1, void *arg2, void *arg3, void *arg4)
 {
@@ -203,6 +207,7 @@ IOReturn IntelMausi::setPowerStateSleepAction(OSObject *owner, void *arg1, void 
     return kIOReturnSuccess;
 }
 
+
 /**
  * Reference: e1000_eeprom_checks(struct e1000_adapter *adapter)
  */
@@ -224,6 +229,12 @@ void IntelMausi::intelEEPROMChecks(struct e1000_adapter *adapter)
 	}
 }
 
+
+/**
+ * intelEnableIRQ - Enable default interrupt generation settings
+ *
+ * Reference: e1000_irq_enable
+ */
 void IntelMausi::intelEnableIRQ(UInt32 newMask)
 {
     intelWriteMem32(E1000_IMC, ~newMask);
@@ -231,11 +242,18 @@ void IntelMausi::intelEnableIRQ(UInt32 newMask)
     intelFlush();
 }
 
+
+/**
+ * intelDisableIRQ - Mask off interrupt generation on the NIC
+ *
+ * Reference: e1000_irq_disable
+ **/
 void IntelMausi::intelDisableIRQ()
 {
-    intelWriteMem32(E1000_IMC, 0xFFFFFFFF);
+    intelWriteMem32(E1000_IMC, ~0);
     intelFlush();
 }
+
 
 /**
  * Reference: __e1000_resume(struct pci_dev *pdev)
@@ -488,6 +506,7 @@ void IntelMausi::intelConfigure(struct e1000_adapter *adapter)
     intelConfigureRx(adapter);
 }
 
+
 /**
  * intelConfigureTx - Configure Transmit Unit after Reset
  * @adapter: board private structure
@@ -592,6 +611,7 @@ void IntelMausi::intelConfigureTx(struct e1000_adapter *adapter)
         intelWriteMem32(E1000_TARC(0), reg_val);
     }
 }
+
 
 /**
  * intelSetupRxControl - configure the receive control registers
@@ -704,6 +724,7 @@ void IntelMausi::intelSetupRxControl(struct e1000_adapter *adapter)
     adapter->flags &= ~FLAG_RESTART_NOW;
 }
 
+
 /**
  * intelConfigureRx - Configure Receive Unit after Reset
  * @adapter: board private structure
@@ -788,6 +809,7 @@ void IntelMausi::intelConfigureRx(struct e1000_adapter *adapter)
 	intelWriteMem32(E1000_RCTL, rctl);
 }
 
+
 /**
  * intelDown - quiesce the device and optionally reset the hardware
  * @adapter: board private structure
@@ -846,6 +868,7 @@ void IntelMausi::intelDown(struct e1000_adapter *adapter, bool reset)
     if (chipType >= board_pch_lpt)
         requireMaxBusStall(0);
 }
+
 
 /**
  * Reference: e1000_init_manageability_pt
@@ -910,6 +933,7 @@ void IntelMausi::intelInitManageabilityPt(struct e1000_adapter *adapter)
 	intelWriteMem32(E1000_MANC2H, manc2h);
 	intelWriteMem32(E1000_MANC, manc);
 }
+
 
 /**
  * intelReset - bring the hardware into a known good state
@@ -1125,6 +1149,7 @@ void IntelMausi::intelReset(struct e1000_adapter *adapter)
     }
 }
 
+
 /**
  * intelPowerDownPhy - Power down the PHY
  *
@@ -1205,6 +1230,7 @@ void IntelMausi::intelResetAdaptive(struct e1000_hw *hw)
 	intelWriteMem32(E1000_AIT, 0);
 }
 
+
 /**
  *  intelUpdateAdaptive - Update Adaptive Interframe Spacing
  *  @hw: pointer to the HW structure
@@ -1245,6 +1271,7 @@ void IntelMausi::intelUpdateAdaptive(struct e1000_hw *hw)
 	}
 }
 
+
 /**
  * intelVlanStripDisable - helper to disable HW VLAN stripping
  * @adapter: board private structure to initialize
@@ -1260,6 +1287,7 @@ void IntelMausi::intelVlanStripDisable(struct e1000_adapter *adapter)
 	ctrl &= ~E1000_CTRL_VME;
 	intelWriteMem32(E1000_CTRL, ctrl);
 }
+
 
 /**
  * intelVlanStripEnable - helper to enable HW VLAN stripping
@@ -1377,6 +1405,7 @@ void IntelMausi::intelRestart()
     //e1000e_trigger_lsc(adapter);
 }
 
+
 /**
  * Reference: e1000e_update_tdt_wa
  */
@@ -1401,6 +1430,7 @@ void IntelMausi::intelUpdateTxDescTail(UInt32 index)
     txCleanBarrierIndex = txNextDescIndex;
 }
 
+
 /**
  * Reference: e1000e_update_rdt_wa
  */
@@ -1420,6 +1450,7 @@ void IntelMausi::intelUpdateRxDescTail(UInt32 index)
     }
 }
 
+
 inline void IntelMausi::intelEnablePCIDevice(IOPCIDevice *provider)
 {
     UInt16 cmdReg;
@@ -1431,6 +1462,7 @@ inline void IntelMausi::intelEnablePCIDevice(IOPCIDevice *provider)
     
     IOSleep(10);
 }
+
 
 /**
  * Reference: e1000e_flush_descriptors
@@ -1453,6 +1485,7 @@ void IntelMausi::intelFlushDescriptors()
     /* execute the writes immediately */
     intelFlush();
 }
+
 
 /**
  * intelFlushTxRing - remove all descriptors from the tx_ring
@@ -1493,6 +1526,7 @@ void IntelMausi::intelFlushTxRing(struct e1000_adapter *adapter)
     usleep_range(200, 250);
 }
 
+
 /**
  * intelFlushRxRing - remove all descriptors from the rx_ring
  *
@@ -1529,6 +1563,7 @@ void IntelMausi::intelFlushRxRing(struct e1000_adapter *adapter)
     intelWriteMem32(E1000_RCTL, rctl & ~E1000_RCTL_EN);
 }
 
+
 /**
  * intelFlushDescRings - remove all descriptors from the descriptor rings
  *
@@ -1564,6 +1599,7 @@ void IntelMausi::intelFlushDescRings(struct e1000_adapter *adapter)
     if (hang_state & FLUSH_DESC_REQUIRED)
         intelFlushRxRing(adapter);
 }
+
 
 /**
  * Reference: e1000e_has_link(struct e1000_adapter *adapter)
@@ -1609,6 +1645,7 @@ bool IntelMausi::intelCheckLink(struct e1000_adapter *adapter)
     
     return link_active;
 }
+
 
 /**
  * intelPhyReadStatus - Update the PHY register status snapshot
@@ -1806,6 +1843,7 @@ release:
     hw->phy.ops.release(hw);
 }
 
+
 void IntelMausi::intelInitMacWakeup(UInt32 wufc, struct IntelAddrData *addrData)
 {
     if (enableWoM) {
@@ -1837,6 +1875,7 @@ void IntelMausi::intelInitMacWakeup(UInt32 wufc, struct IntelAddrData *addrData)
     intelWriteMem32(E1000_WUFC, wufc);
     intelWriteMem32(E1000_WUC, E1000_WUC_PME_EN);
 }
+
 
 void IntelMausi::intelSetupAdvForMedium(const IONetworkMedium *medium)
 {
@@ -1977,6 +2016,7 @@ void IntelMausi::setMaxLatency(UInt32 linkSpeed)
     DebugLog("[IntelMausi]: requireMaxBusStall(%uns).\n", latency);
 }
 
+
 //FIXME: Check e1000_set_eee_pchlan
 UInt16 IntelMausi::intelSupportsEEE(struct e1000_adapter *adapter)
 {
@@ -2042,6 +2082,7 @@ release:
 done:
     return result;
 }
+
 
 SInt32 IntelMausi::intelEnableEEE(struct e1000_hw *hw, UInt16 mode)
 {

@@ -398,8 +398,6 @@ private:
     bool intelIdentifyChip();
     bool intelStart();
     void intelEEPROMChecks(struct e1000_adapter *adapter);
-    void intelInitTxRing();
-    void intelInitRxRing();
     void intelEnableIRQ(UInt32 newMask);
     void intelDisableIRQ();
     void intelUpdateTxDescTail(UInt32 index);

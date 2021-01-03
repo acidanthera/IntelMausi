@@ -207,7 +207,7 @@ void IntelMausi::free()
 {
     UInt32 i;
     
-    DebugLog("free() ===>\n");
+    DebugLog("[IntelMausi]: free() ===>\n");
     
     if (workLoop) {
         if (interruptSource) {
@@ -245,7 +245,7 @@ void IntelMausi::free()
         mcListCount = 0;
     }
     
-    DebugLog("free() <===\n");
+    DebugLog("[IntelMausi]: free() <===\n");
     
     super::free();
 }
@@ -388,11 +388,11 @@ void IntelMausi::stop(IOService *provider)
 
 IOReturn IntelMausi::registerWithPolicyMaker(IOService *policyMaker)
 {
-    DebugLog("registerWithPolicyMaker() ===>\n");
+    DebugLog("[IntelMausi]: registerWithPolicyMaker() ===>\n");
     
     powerState = kPowerStateOn;
     
-    DebugLog("registerWithPolicyMaker() <===\n");
+    DebugLog("[IntelMausi]: registerWithPolicyMaker() <===\n");
     
     return policyMaker->registerPowerDriver(this, powerStateArray, kPowerStateCount);
 }
@@ -401,7 +401,7 @@ IOReturn IntelMausi::setPowerState(unsigned long powerStateOrdinal, IOService *p
 {
     IOReturn result = IOPMAckImplied;
     
-    DebugLog("setPowerState() ===>\n");
+    DebugLog("[IntelMausi]: setPowerState() ===>\n");
     
     if (powerStateOrdinal == powerState) {
         DebugLog("[IntelMausi]: Already in power state %lu.\n", powerStateOrdinal);
@@ -417,14 +417,14 @@ IOReturn IntelMausi::setPowerState(unsigned long powerStateOrdinal, IOService *p
     powerState = powerStateOrdinal;
     
 done:
-    DebugLog("setPowerState() <===\n");
+    DebugLog("[IntelMausi]: setPowerState() <===\n");
     
     return result;
 }
 
 void IntelMausi::systemWillShutdown(IOOptionBits specifier)
 {
-    DebugLog("systemWillShutdown() ===>\n");
+    DebugLog("[IntelMausi]: systemWillShutdown() ===>\n");
     
     if ((kIOMessageSystemWillPowerOff | kIOMessageSystemWillRestart) & specifier) {
         disable(netif);
@@ -438,7 +438,7 @@ void IntelMausi::systemWillShutdown(IOOptionBits specifier)
         e1000e_release_hw_control(&adapterData);
     }
     
-    DebugLog("systemWillShutdown() <===\n");
+    DebugLog("[IntelMausi]: systemWillShutdown() <===\n");
     
     /* Must call super on shutdown or system will stall. */
     super::systemWillShutdown(specifier);
@@ -1439,7 +1439,7 @@ IOReturn IntelMausi::setMulticastList(IOEthernetAddress *addrs, UInt32 count)
     vm_size_t newSize;
     IOReturn result = kIOReturnNoMemory;
 
-    DebugLog("setMulticastList() ===>\n");
+    DebugLog("[IntelMausi]: setMulticastList() ===>\n");
 
     if (count) {
         newSize = count * sizeof(IOEthernetAddress);
@@ -1467,7 +1467,7 @@ IOReturn IntelMausi::setMulticastList(IOEthernetAddress *addrs, UInt32 count)
         result = kIOReturnSuccess;
     }
 
-    DebugLog("setMulticastList() <===\n");
+    DebugLog("[IntelMausi]: setMulticastList() <===\n");
     
     return result;
 }
@@ -1476,7 +1476,7 @@ IOReturn IntelMausi::getChecksumSupport(UInt32 *checksumMask, UInt32 checksumFam
 {
     IOReturn result = kIOReturnUnsupported;
     
-    DebugLog("getChecksumSupport() ===>\n");
+    DebugLog("[IntelMausi]: getChecksumSupport() ===>\n");
     
     if ((checksumFamily == kChecksumFamilyTCPIP) && checksumMask) {
         if (isOutput) {
@@ -1489,7 +1489,7 @@ IOReturn IntelMausi::getChecksumSupport(UInt32 *checksumMask, UInt32 checksumFam
         }
         result = kIOReturnSuccess;
     }
-    DebugLog("getChecksumSupport() <===\n");
+    DebugLog("[IntelMausi]: getChecksumSupport() <===\n");
     
     return result;
 }
@@ -1498,9 +1498,9 @@ UInt32 IntelMausi::getFeatures() const
 {
     UInt32 features = (kIONetworkFeatureMultiPages | kIONetworkFeatureHardwareVlan);
     
-    DebugLog("getFeatures() ===>\n");
+    DebugLog("[IntelMausi]: getFeatures() ===>\n");
     
-    DebugLog("getFeatures() <===\n");
+    DebugLog("[IntelMausi]: getFeatures() <===\n");
     
     return features;
 }
@@ -1509,7 +1509,7 @@ IOReturn IntelMausi::setWakeOnMagicPacket(bool active)
 {
     IOReturn result = kIOReturnUnsupported;
     
-    DebugLog("setWakeOnMagicPacket() ===>\n");
+    DebugLog("[IntelMausi]: setWakeOnMagicPacket() ===>\n");
     
     if (wolCapable) {
         wolActive = active;
@@ -1517,7 +1517,7 @@ IOReturn IntelMausi::setWakeOnMagicPacket(bool active)
         result = kIOReturnSuccess;
     }
     
-    DebugLog("setWakeOnMagicPacket() <===\n");
+    DebugLog("[IntelMausi]: setWakeOnMagicPacket() <===\n");
     
     return result;
 }
@@ -1526,7 +1526,7 @@ IOReturn IntelMausi::getPacketFilters(const OSSymbol *group, UInt32 *filters) co
 {
     IOReturn result = kIOReturnSuccess;
     
-    DebugLog("getPacketFilters() ===>\n");
+    DebugLog("[IntelMausi]: getPacketFilters() ===>\n");
     
     if ((group == gIOEthernetWakeOnLANFilterGroup) && wolCapable) {
         if (enableWoM) {
@@ -1542,7 +1542,7 @@ IOReturn IntelMausi::getPacketFilters(const OSSymbol *group, UInt32 *filters) co
         result = super::getPacketFilters(group, filters);
     }
     
-    DebugLog("getPacketFilters() <===\n");
+    DebugLog("[IntelMausi]: getPacketFilters() <===\n");
     
     return result;
 }
@@ -1552,7 +1552,7 @@ IOReturn IntelMausi::setHardwareAddress(const IOEthernetAddress *addr)
     struct e1000_hw *hw = &adapterData.hw;
     IOReturn result = kIOReturnError;
     
-    DebugLog("setHardwareAddress() ===>\n");
+    DebugLog("[IntelMausi]: setHardwareAddress() ===>\n");
     
     if (addr && is_valid_ether_addr(&addr->bytes[0])) {
         memcpy(hw->mac.addr, &addr->bytes[0], kIOEthernetAddressSize);
@@ -1562,7 +1562,7 @@ IOReturn IntelMausi::setHardwareAddress(const IOEthernetAddress *addr)
         result = kIOReturnSuccess;
     }
     
-    DebugLog("setHardwareAddress() <===\n");
+    DebugLog("[IntelMausi]: setHardwareAddress() <===\n");
     
     return result;
 }
@@ -1572,7 +1572,7 @@ IOReturn IntelMausi::getHardwareAddress(IOEthernetAddress *addr)
 {
     IOReturn result = kIOReturnError;
     
-    DebugLog("getHardwareAddress() ===>\n");
+    DebugLog("[IntelMausi]: getHardwareAddress() ===>\n");
     
     //IOLog("[IntelMausi]: RAH = 0x%x, RAL = 0x%x\n", intelReadMem32(E1000_RAH(0)), intelReadMem32(E1000_RAL(0)));
     
@@ -1583,7 +1583,7 @@ IOReturn IntelMausi::getHardwareAddress(IOEthernetAddress *addr)
             result = kIOReturnSuccess;
     }
     
-    DebugLog("getHardwareAddress() <===\n");
+    DebugLog("[IntelMausi]: getHardwareAddress() <===\n");
     
     return result;
 }
@@ -1592,7 +1592,7 @@ IOReturn IntelMausi::selectMedium(const IONetworkMedium *medium)
 {
     IOReturn result = kIOReturnSuccess;
     
-    DebugLog("selectMedium() ===>\n");
+    DebugLog("[IntelMausi]: selectMedium() ===>\n");
 
     if (medium) {
         intelSetupAdvForMedium(medium);
@@ -1603,7 +1603,7 @@ IOReturn IntelMausi::selectMedium(const IONetworkMedium *medium)
         intelRestart();
     }
 
-    DebugLog("selectMedium() <===\n");
+    DebugLog("[IntelMausi]: selectMedium() <===\n");
     
 done:
     return result;
@@ -1611,11 +1611,11 @@ done:
 
 IOReturn IntelMausi::getMaxPacketSize(UInt32 * maxSize) const
 {
-    DebugLog("getMaxPacketSize() ===>\n");
+    DebugLog("[IntelMausi]: getMaxPacketSize() ===>\n");
     
     *maxSize = kMaxPacketSize;
     
-    DebugLog("getMaxPacketSize() <===\n");
+    DebugLog("[IntelMausi]: getMaxPacketSize() <===\n");
     
     return kIOReturnSuccess;
 }
@@ -1624,7 +1624,7 @@ IOReturn IntelMausi::setMaxPacketSize(UInt32 maxSize)
 {
     IOReturn result = kIOReturnError;
     
-    DebugLog("setMaxPacketSize() ===>\n");
+    DebugLog("[IntelMausi]: setMaxPacketSize() ===>\n");
     
     if (maxSize <= kMaxPacketSize) {
         mtu = maxSize - (ETH_HLEN + ETH_FCS_LEN);
@@ -1641,7 +1641,7 @@ IOReturn IntelMausi::setMaxPacketSize(UInt32 maxSize)
         result = kIOReturnSuccess;
     }
     
-    DebugLog("setMaxPacketSize() <===\n");
+    DebugLog("[IntelMausi]: setMaxPacketSize() <===\n");
     
     return result;
 }
@@ -2290,6 +2290,8 @@ void IntelMausi::setLinkUp()
     DebugLog("[IntelMausi]: MANC=0x%08x\n", intelReadMem32(E1000_MANC));
     DebugLog("[IntelMausi]: MANC2H=0x%08x\n", intelReadMem32(E1000_MANC2H));
     DebugLog("[IntelMausi]: LTRV=0x%08x\n", intelReadMem32(E1000_LTRV));
+    DebugLog("[IntelMausi]: wolCapable=%u", wolCapable);
+    DebugLog("[IntelMausi]: wolActive=%u", wolActive);
 }
 
 void IntelMausi::setLinkDown()
@@ -2376,16 +2378,16 @@ bool IntelMausi::intelStart()
     struct e1000_hw *hw = &adapterData.hw;
     const struct e1000_info *ei = adapterData.ei;
     struct e1000_mac_info *mac = &hw->mac;
-    SInt32 rval = 0;
-    UInt16 eepromData = 0;
-	UInt16 eepromApmeMask = E1000_EEPROM_APME;
-    int error, i;
+    s32 ret_val = 0;
+    u16 eeprom_data = 0;
+    u16 eeprom_apme_mask = E1000_EEPROM_APME;
+    int err, i;
     bool result = false;
     
     /* Setup some default values. */
     adapterData.rx_buffer_len = kRxBufferPktSize;
-	adapterData.max_frame_size = mtu + ETH_HLEN + ETH_FCS_LEN;
-	adapterData.min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
+    adapterData.max_frame_size = mtu + ETH_HLEN + ETH_FCS_LEN;
+    adapterData.min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
     
     adapterData.rx_int_delay = 0;
     adapterData.rx_abs_int_delay = 0;
@@ -2405,132 +2407,141 @@ bool IntelMausi::intelStart()
 
     initPCIPowerManagment(pciDevice, ei);
     
-	/* Explicitly disable IRQ since the NIC can be in any state. */
-	intelDisableIRQ();
+    /* Explicitly disable IRQ since the NIC can be in any state. */
+    intelDisableIRQ();
     
-	set_bit(__E1000_DOWN, &adapterData.state);
+    set_bit(__E1000_DOWN, &adapterData.state);
     
     memcpy(&hw->mac.ops, ei->mac_ops, sizeof(hw->mac.ops));
-	memcpy(&hw->nvm.ops, ei->nvm_ops, sizeof(hw->nvm.ops));
-	memcpy(&hw->phy.ops, ei->phy_ops, sizeof(hw->phy.ops));
+    memcpy(&hw->nvm.ops, ei->nvm_ops, sizeof(hw->nvm.ops));
+    memcpy(&hw->phy.ops, ei->phy_ops, sizeof(hw->phy.ops));
     
-    if (hw->mac.type == e1000_ich8lan)
-        e1000e_set_kmrn_lock_loss_workaround_ich8lan(hw, true);
-    
-	hw->phy.autoneg_wait_to_complete = 0;
-    
-    error = ei->get_variants(&adapterData);
-    
-	if (error) {
-        IOLog("[IntelMausi]: Failed to get adapter data with error %d.\n", error);
-		goto done;
+    err = ei->get_variants(&adapterData);
+    if (err) {
+        IOLog("[IntelMausi]: Failed to get adapter data with error %d.\n", err);
+        goto done;
     }
-	if ((adapterData.flags & FLAG_IS_ICH) &&
-	    (adapterData.flags & FLAG_READ_ONLY_NVM) &&
+    if ((adapterData.flags & FLAG_IS_ICH) &&
+        (adapterData.flags & FLAG_READ_ONLY_NVM) &&
         (hw->mac.type < e1000_pch_spt))
-		e1000e_write_protect_nvm_ich8lan(hw);
+        e1000e_write_protect_nvm_ich8lan(hw);
     
-	hw->phy.autoneg_wait_to_complete = 0;
+    hw->mac.ops.get_bus_info(&adapterData.hw);
     
-	/* Copper options */
-	if (hw->phy.media_type == e1000_media_type_copper) {
-		hw->phy.mdix = AUTO_ALL_MODES;
-		hw->phy.disable_polarity_correction = 0;
-		hw->phy.ms_type = e1000_ms_hw_default;
-	}
-	if (hw->phy.ops.check_reset_block && hw->phy.ops.check_reset_block(hw))
-		IOLog("[IntelMausi]: PHY reset is blocked due to SOL/IDER session.\n");
+    hw->phy.autoneg_wait_to_complete = 0;
+    
+    /* Copper options */
+    if (hw->phy.media_type == e1000_media_type_copper) {
+        hw->phy.mdix = AUTO_ALL_MODES;
+        hw->phy.disable_polarity_correction = 0;
+        hw->phy.ms_type = e1000_ms_hw_default;
+    }
+    
+    if (hw->phy.ops.check_reset_block && hw->phy.ops.check_reset_block(hw))
+        IOLog("[IntelMausi]: PHY reset is blocked due to SOL/IDER session.\n");
 
     if (intelEnableMngPassThru(hw))
-		adapterData.flags |= FLAG_MNG_PT_ENABLED;
+        adapterData.flags |= FLAG_MNG_PT_ENABLED;
 
-	/* before reading the NVM, reset the controller to
-	 * put the device in a known good starting state
-	 */
-	hw->mac.ops.reset_hw(hw);
+    /* before reading the NVM, reset the controller to
+     * put the device in a known good starting state
+     */
+    hw->mac.ops.reset_hw(hw);
     
-	/* systems with ASPM and others may see the checksum fail on the first
-	 * attempt. Let's give it a few tries
-	 */
-	for (i = 0;; i++) {
-		if (e1000_validate_nvm_checksum(hw) >= 0)
-			break;
-        
-		if (i == 2) {
-			IOLog("[IntelMausi]: The NVM Checksum Is Not Valid.\n");
-			goto error_eeprom;
+    /* systems with ASPM and others may see the checksum fail on the first
+     * attempt. Let's give it a few tries
+     */
+    for (i = 0;; i++) {
+        if (e1000_validate_nvm_checksum(hw) >= 0)
             break;
-		}
-	}
-	//intelEEPROMChecks(&adapterData);
+        if (i == 2) {
+            IOLog("[IntelMausi]: The NVM Checksum Is Not Valid.\n");
+            goto error_eeprom;
+            break;
+        }
+    }
+    //intelEEPROMChecks(&adapterData);
     
-	/* copy the MAC address */
-	if (e1000e_read_mac_addr(hw))
-		IOLog("[IntelMausi]: NVM Read Error while reading MAC address.\n");
+    /* copy the MAC address */
+    if (e1000e_read_mac_addr(hw))
+        IOLog("[IntelMausi]: NVM Read Error while reading MAC address.\n");
     
-	if (!is_valid_ether_addr(mac->addr)) {
-		IOLog("[IntelMausi]: Invalid MAC Address: %pM\n", mac->addr);
-		goto error_eeprom;
-	}
-	/* Initialize link parameters. User can change them with ethtool */
-	hw->mac.autoneg = 1;
-	adapterData.fc_autoneg = true;
-	hw->fc.requested_mode = e1000_fc_default;
-	hw->fc.current_mode = e1000_fc_default;
-	hw->phy.autoneg_advertised = 0x2f;
+    if (!is_valid_ether_addr(mac->addr)) {
+        IOLog("[IntelMausi]: Invalid MAC Address: %pM\n", mac->addr);
+        goto error_eeprom;
+    }
+    /* Initialize link parameters. User can change them with ethtool */
+    hw->mac.autoneg = 1;
+    adapterData.fc_autoneg = true;
+    hw->fc.requested_mode = e1000_fc_default;
+    hw->fc.current_mode = e1000_fc_default;
+    hw->phy.autoneg_advertised = 0x2f;
     
-	/* Initial Wake on LAN setting - If APM wake is enabled in
-	 * the EEPROM, enable the ACPI Magic Packet filter
-	 */
-	if (adapterData.flags & FLAG_APME_IN_WUC) {
-		/* APME bit in EEPROM is mapped to WUC.APME */
-		eepromData = intelReadMem32(E1000_WUC);
-		eepromApmeMask = E1000_WUC_APME;
-        
-		if ((hw->mac.type > e1000_ich10lan) &&
-		    (eepromData & E1000_WUC_PHY_WAKE))
-			adapterData.flags2 |= FLAG2_HAS_PHY_WAKEUP;
-	} else if (adapterData.flags & FLAG_APME_IN_CTRL3) {
-		if (adapterData.flags & FLAG_APME_CHECK_PORT_B && (adapterData.hw.bus.func == 1))
-			rval = e1000_read_nvm(hw,  NVM_INIT_CONTROL3_PORT_B, 1, &eepromData);
-		else
-			rval = e1000_read_nvm(hw, NVM_INIT_CONTROL3_PORT_A, 1, &eepromData);
-	}
+    /* Initial Wake on LAN setting - If APM wake is enabled in
+     * the EEPROM, enable the ACPI Magic Packet filter
+     */
+    if (adapterData.flags & FLAG_APME_IN_WUC) {
+        /* APME bit in EEPROM is mapped to WUC.APME */
+        eeprom_data = intelReadMem32(E1000_WUC);
+        eeprom_apme_mask = E1000_WUC_APME;
+        if ((hw->mac.type > e1000_ich10lan) &&
+            (eeprom_data & E1000_WUC_PHY_WAKE))
+            adapterData.flags2 |= FLAG2_HAS_PHY_WAKEUP;
+    } else if (adapterData.flags & FLAG_APME_IN_CTRL3) {
+        if (adapterData.flags & FLAG_APME_CHECK_PORT_B &&
+            (adapterData.hw.bus.func == 1))
+            ret_val = e1000_read_nvm(&adapterData.hw,
+                          NVM_INIT_CONTROL3_PORT_B,
+                          1, &eeprom_data);
+        else
+            ret_val = e1000_read_nvm(&adapterData.hw,
+                          NVM_INIT_CONTROL3_PORT_A,
+                          1, &eeprom_data);
+    }
+
+    /* fetch WoL from EEPROM */
+    if (ret_val)
+        DebugLog("[IntelMausi]: NVM read error getting WoL initial values: %d\n", ret_val);
+    else if (eeprom_data & eeprom_apme_mask)
+        adapterData.eeprom_wol |= E1000_WUFC_MAG;
     
-	/* fetch WoL from EEPROM */
-	if (rval)
-		DebugLog("[IntelMausi]: NVM read error getting WoL initial values: %d\n", rval);
-	else if (eepromData & eepromApmeMask)
-		adapterData.eeprom_wol |= E1000_WUFC_MAG;
+    /* now that we have the eeprom settings, apply the special cases
+     * where the eeprom may be wrong or the board simply won't support
+     * wake on lan on a particular port
+     */
+    if (!(adapterData.flags & FLAG_HAS_WOL))
+        adapterData.eeprom_wol = 0;
     
-	/* now that we have the eeprom settings, apply the special cases
-	 * where the eeprom may be wrong or the board simply won't support
-	 * wake on lan on a particular port
-	 */
-	if (!(adapterData.flags & FLAG_HAS_WOL))
-		adapterData.eeprom_wol = 0;
+    /* initialize the wol settings based on the eeprom settings */
+    adapterData.wol = adapterData.eeprom_wol;
     
-	/* initialize the wol settings based on the eeprom settings */
-	adapterData.wol = adapterData.eeprom_wol;
-    
-	/* make sure adapter isn't asleep if manageability is enabled */
-	if (adapterData.wol || (adapterData.flags & FLAG_MNG_PT_ENABLED) || (hw->mac.ops.check_mng_mode(hw)))
+    /* make sure adapter isn't asleep if manageability is enabled */
+    if (adapterData.wol || (adapterData.flags & FLAG_MNG_PT_ENABLED) || (hw->mac.ops.check_mng_mode(hw)))
+        //device_wakeup_enable(&pdev->dev);
         pciDevice->enablePCIPowerManagement(kPCIPMCSPowerStateD0);
     
-	/* save off EEPROM version number */
-	rval = e1000_read_nvm(hw, 5, 1, &adapterData.eeprom_vers);
+    /* save off EEPROM version number */
+    ret_val = e1000_read_nvm(hw, 5, 1, &adapterData.eeprom_vers);
     
-	if (rval) {
-		DebugLog("[IntelMausi]: NVM read error getting EEPROM version: %d\n", rval);
-		adapterData.eeprom_vers = 0;
-	}
-	/* reset the hardware with the new settings */
-	intelReset(&adapterData);
+    if (ret_val) {
+        DebugLog("[IntelMausi]: NVM read error getting EEPROM version: %d\n", ret_val);
+        adapterData.eeprom_vers = 0;
+    }
+
+    /* init PTP hardware clock */
+        //e1000e_ptp_init(adapter);
+        
+    /* reset the hardware with the new settings */
+    intelReset(&adapterData);
     
-	/* Let the f/w know that the h/w is now under the control of the driver
+    /* Let the f/w know that the h/w is now under the control of the driver
      * even in case the device has AMT in order to avoid problems after wakeup.
-	 */
-	e1000e_get_hw_control(&adapterData);
+     */
+    e1000e_get_hw_control(&adapterData);
+    /*
+     if (!(adapter->flags & FLAG_HAS_AMT))
+         e1000e_get_hw_control(adapter);
+     */
         
     intrMask = IMS_ENABLE_MASK;
     
@@ -2546,12 +2557,11 @@ done:
     return result;
     
 error_eeprom:
-	if (hw->phy.ops.check_reset_block && !hw->phy.ops.check_reset_block(hw))
-		e1000_phy_hw_reset(hw);
+    if (hw->phy.ops.check_reset_block && !hw->phy.ops.check_reset_block(hw))
+        e1000_phy_hw_reset(hw);
     
     goto done;
 }
-
 #pragma mark --- timer action methods ---
 
 void IntelMausi::timerAction(IOTimerEventSource *timer)

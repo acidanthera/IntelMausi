@@ -145,7 +145,6 @@ void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000
 
         if (aspmDisable) {
             provider->extendedConfigWrite16(pcieCapOffset + kIOPCIELinkControl, (pcieLinkCtl & ~aspmDisable));
-
             IOSleep(10);
         }
 
@@ -304,8 +303,6 @@ void IntelMausi::intelEnable()
 
     intelSetupAdvForMedium(selectedMedium);
 
-    e1000_phy_hw_reset(hw);
-
     if (hw->mac.type >= e1000_pch2lan)
         e1000_resume_workarounds_pchlan(hw);
 
@@ -379,7 +376,8 @@ void IntelMausi::intelDisable()
 {
     struct IntelAddrData addrData;
     struct e1000_hw *hw = &adapterData.hw;
-    u32 ctrl, ctrlExt, rctl, status, wufc = adapterData.wol, linkStatus = kIONetworkLinkValid;
+    u32 ctrl, ctrlExt, rctl, status;
+    u32 wufc = adapterData.wol, linkStatus = kIONetworkLinkValid;
     int retval = 0;
 
     DebugLog("[IntelMausi]: intelDisable()<===");
@@ -454,10 +452,8 @@ void IntelMausi::intelDisable()
         e1000e_igp3_phy_powerdown_workaround_ich8lan(&adapterData.hw);
     } else if (hw->mac.type >= e1000_pch_lpt) {
         if (wufc && !(wufc & (E1000_WUFC_EX | E1000_WUFC_MC | E1000_WUFC_BC))) {
-            /* ULP does not support wake from unicast, multicast
-             * or broadcast.
-             */
-                e1000_enable_ulp_lpt_lp(hw, false);
+            /* ULP does not support wake from unicast, multicast or broadcast. */
+            e1000_enable_ulp_lpt_lp(hw, false);
         }
     }
 
@@ -755,6 +751,7 @@ void IntelMausi::intelConfigureRx(struct e1000_adapter *adapter)
     //struct e1000_hw *hw = &adapter->hw;
     u64 rdba = rxPhyAddr;
     u32 rctl, rxcsum, ctrl_ext, rdlen = kRxDescSize;
+
     /* disable receives while setting up the descriptors */
     rctl = intelReadMem32(E1000_RCTL);
     if (!(adapter->flags2 & FLAG2_NO_DISABLE_RX))
@@ -837,7 +834,7 @@ void IntelMausi::intelConfigureRx(struct e1000_adapter *adapter)
 void IntelMausi::intelDown(struct e1000_adapter *adapter, bool reset)
 {
     struct e1000_hw *hw = &adapter->hw;
-        u32 tctl, rctl;
+    u32 tctl, rctl;
 
     /* signal that we're down so the interrupt handler does not
      * reschedule our watchdog timer
@@ -916,7 +913,8 @@ void IntelMausi::intelInitManageabilityPt(struct e1000_adapter *adapter)
 
         case e1000_82574:
         case e1000_82583:
-            /* Check if IPMI pass-through decision filter already exists;
+            /*
+             * Check if IPMI pass-through decision filter already exists;
              * if so, enable it.
              */
             for (i = 0, j = 0; i < 8; i++) {
@@ -1319,6 +1317,7 @@ void IntelMausi::intelVlanStripEnable(struct e1000_adapter *adapter)
     ctrl |= E1000_CTRL_VME;
     intelWriteMem32(E1000_CTRL, ctrl);
 }
+
 
 /**
  * intelRssKeyFill - helper to fill RSS key hash
@@ -2064,7 +2063,9 @@ void IntelMausi::setMaxLatency(UInt32 linkSpeed)
 }
 
 
-//FIXME: Check e1000_set_eee_pchlan
+/**
+ * intelSupportsEEE
+ */
 UInt16 IntelMausi::intelSupportsEEE(struct e1000_adapter *adapter)
 {
     struct e1000_hw *hw = &adapter->hw;
@@ -2131,6 +2132,9 @@ done:
 }
 
 
+/**
+ * intelEnableEEE
+ */
 SInt32 IntelMausi::intelEnableEEE(struct e1000_hw *hw, UInt16 mode)
 {
     SInt32 error = 0;

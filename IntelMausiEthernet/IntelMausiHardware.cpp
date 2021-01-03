@@ -97,7 +97,9 @@ error:
 
 void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000_info *ei)
 {
+#ifdef DEBUG
     UInt32 pcieLinkCap;
+#endif
     UInt16 pcieLinkCtl;
     UInt16 aspmDisable;
     UInt16 pmCap;
@@ -120,7 +122,9 @@ void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000
     
     /* Get PCIe link information. */
     if (provider->findPCICapability(kIOPCIPCIExpressCapability, &pcieCapOffset)) {
+#ifdef DEBUG
         pcieLinkCap = provider->extendedConfigRead32(pcieCapOffset + kIOPCIELinkCapability);
+#endif
         pcieLinkCtl = provider->extendedConfigRead16(pcieCapOffset + kIOPCIELinkControl);
         DebugLog("[IntelMausi]: PCIe link capabilities: 0x%08x, link control: 0x%04x.\n", pcieLinkCap, pcieLinkCtl);
         aspmDisable = 0;
@@ -131,8 +135,11 @@ void IntelMausi::initPCIPowerManagment(IOPCIDevice *provider, const struct e1000
         if (ei->flags2 & FLAG2_DISABLE_ASPM_L1)
             aspmDisable |= kIOPCIELinkCtlL1;
 
-        if (aspmDisable)
+        if (aspmDisable) {
             provider->extendedConfigWrite16(pcieCapOffset + kIOPCIELinkControl, (pcieLinkCtl & ~aspmDisable));
+            
+            IOSleep(10);
+        }
 
         pcieLinkCtl = provider->extendedConfigRead16(pcieCapOffset + kIOPCIELinkControl);
         
@@ -190,6 +197,7 @@ IOReturn IntelMausi::setPowerStateSleepAction(OSObject *owner, void *arg1, void 
             val16 |= kPCIPMCSPowerStateD3;
         
         dev->extendedConfigWrite16(offset, val16);
+        
         IOSleep(10);
     }
     return kIOReturnSuccess;
@@ -638,11 +646,7 @@ void IntelMausi::intelSetupRxControl(struct e1000_adapter *adapter)
     
     
     rctl |= E1000_RCTL_SECRC;
-    // @FIXME: Add config option
-    // Add option via plist configuration
-    // for disabling CRC stripping in favor
-    // support jumbo frames
-    
+    // FIXME: Add option for disabling jumbo in favour of CRC header
      /*if (adapter->flags2 & FLAG2_CRC_STRIPPING)
          rctl |= E1000_RCTL_SECRC;
      */
@@ -777,7 +781,6 @@ void IntelMausi::intelConfigureRx(struct e1000_adapter *adapter)
 	 */
 	if ((mtu > ETH_DATA_LEN) && (adapter->flags & FLAG_IS_ICH)) {
         u32 rxdctl = intelReadMem32(E1000_RXDCTL(0));
-        // @FIXME: check should we need BIT(8)
         intelWriteMem32(E1000_RXDCTL(0), rxdctl | 0x3 | BIT(8));
     }
     
@@ -1275,26 +1278,18 @@ void IntelMausi::intelVlanStripEnable(struct e1000_adapter *adapter)
 }
 
 
-
-/**
- * FIXME: Implement DO_ONCE logic
- */
-//#define get_random_once(buf, nbytes)               \
-    DO_ONCE(random_buf, (buf), (nbytes))
-#define get_random(buf, nbytes)               \
-            random_buf((buf), (nbytes))
-
-/* RSS keys are 40 or 52 bytes long */
-#define INTEL_RSS_KEY_LEN 52
-
-u8 intel_rss_key[INTEL_RSS_KEY_LEN];
-
-void intel_rss_key_fill(void *buffer, size_t len)
+void IntelMausi::intelRssKeyFill(void *buffer, size_t len)
 {
-    assert(len > sizeof(intel_rss_key));
-    get_random(intel_rss_key, sizeof(intel_rss_key));
-    memcpy(buffer, intel_rss_key, len);
+    assert(len > sizeof(rssHashKey));
+    if (isRssSet) {
+        memcpy(buffer, rssHashKey, len);
+    } else {
+        random_buf(rssHashKey, sizeof(rssHashKey));
+        memcpy(buffer, rssHashKey, len);
+        isRssSet = true;
+    }
 }
+
 
 /**
  * Reference: e1000e_setup_rss_hash
@@ -1305,7 +1300,7 @@ void IntelMausi::intelSetupRssHash(struct e1000_adapter *adapter)
     u32 rss_key[10];
     int i;
     
-    intel_rss_key_fill(rss_key, sizeof(rss_key));
+    intelRssKeyFill(rss_key, sizeof(rss_key));
     
     for (i = 0; i < 10; i++)
         intelWriteMem32(E1000_RSSRK(i), rss_key[i]);
@@ -1371,10 +1366,6 @@ void IntelMausi::intelRestart()
     intelConfigure(&adapterData);
     
     /* From here on the code is the same as e1000e_up() */
-	//FIXME: check it!
-    /* hardware has been reset, we need to reload some things */
-    //e1000_configure(adapter);
-    
     clear_bit(__E1000_DOWN, &adapterData.state);
     
 	intelEnableIRQ(intrMask);
@@ -1388,7 +1379,6 @@ void IntelMausi::intelRestart()
 
 /**
  * Reference: e1000e_update_tdt_wa
- * FIXME: Check FLAG2_PCIM2PCI_ARBITER_WA before call this routine, not inside
  */
 void IntelMausi::intelUpdateTxDescTail(UInt32 index)
 {
@@ -1438,18 +1428,17 @@ inline void IntelMausi::intelEnablePCIDevice(IOPCIDevice *provider)
     cmdReg |= (kIOPCICommandBusMaster | kIOPCICommandMemorySpace);
     cmdReg &= ~kIOPCICommandIOSpace;
 	provider->extendedConfigWrite16(kIOPCIConfigCommand, cmdReg);
+    
+    IOSleep(10);
 }
 
 /**
- * FIXME: Why we don't touch RDTR?
- * Flush RDTR and test!
  * Reference: e1000e_flush_descriptors
  */
 void IntelMausi::intelFlushDescriptors()
 {
     /* flush pending descriptor writebacks to memory */
     intelWriteMem32(E1000_TIDV, adapterData.tx_int_delay | E1000_TIDV_FPD);
-    //intelWriteMem32(E1000_RDTR, adapterData.rx_int_delay | E1000_RDTR_FPD);
     intelWriteMem32(E1000_RDTR, adapterData.rx_int_delay | E1000_RDTR_FPD);
     
     /* execute the writes immediately */
@@ -1459,7 +1448,6 @@ void IntelMausi::intelFlushDescriptors()
      * write is successful
      */
     intelWriteMem32(E1000_TIDV, adapterData.tx_int_delay | E1000_TIDV_FPD);
-    //intelWriteMem32(E1000_RDTR, adapterData.rx_int_delay | E1000_RDTR_FPD);
     intelWriteMem32(E1000_RDTR, adapterData.rx_int_delay | E1000_RDTR_FPD);
     
     /* execute the writes immediately */
@@ -1632,10 +1620,7 @@ void IntelMausi::intelPhyReadStatus(struct e1000_adapter *adapter)
 	struct e1000_hw *hw = &adapter->hw;
 	struct e1000_phy_regs *phy = &adapter->phy_regs;
     
-    //
-    // FIXME: Missing pm_runtime_suspended check
-    // if (!pm_runtime_suspended((&adapter->pdev->dev)->parent)
-    //
+    
 	if ((intelReadMem32(E1000_STATUS) & E1000_STATUS_LU) &&
 	    (adapter->hw.phy.media_type == e1000_media_type_copper)) {
 		int ret_val;
@@ -1850,8 +1835,6 @@ void IntelMausi::intelInitMacWakeup(UInt32 wufc, struct IntelAddrData *addrData)
         intelWriteMem32(E1000_IPAV, av);
     }
     intelWriteMem32(E1000_WUFC, wufc);
-    // FIXME: Not sure according PME_STATUS
-    //intelWriteMem32(E1000_WUC, (E1000_WUC_PME_EN | E1000_WUC_PME_STATUS));
     intelWriteMem32(E1000_WUC, E1000_WUC_PME_EN);
 }
 

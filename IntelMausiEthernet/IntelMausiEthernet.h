@@ -39,6 +39,9 @@ extern "C" {
 #define intelReadMem32(reg)             OSReadLittleInt32((baseAddr), (reg))
 #define intelFlush()                    OSReadLittleInt32((baseAddr), (E1000_STATUS))
 
+/* RSS keys are 40 or 52 bytes long */
+#define INTEL_RSS_KEY_LEN 52
+
 #define super IOEthernetController
 
 enum
@@ -418,6 +421,7 @@ private:
     void intelUpdateAdaptive(struct e1000_hw *hw);
     void intelVlanStripDisable(struct e1000_adapter *adapter);
     void intelVlanStripEnable(struct e1000_adapter *adapter);
+    void intelRssKeyFill(void *buffer, size_t len);
     void intelSetupRssHash(struct e1000_adapter *adapter);
 
     void intelRestart();
@@ -516,12 +520,15 @@ private:
     UInt16 eeeMode;
     UInt8 pcieCapOffset;
     UInt8 pciPMCtrlOffset;
+    
+    UInt8 rssHashKey[INTEL_RSS_KEY_LEN];
 
 #ifdef __PRIVATE_SPI__
     IONetworkPacketPollingParameters pollParams;
 #endif /* __PRIVATE_SPI__ */
 
     /* flags */
+    bool isRssSet;
     bool isEnabled;
 	bool promiscusMode;
 	bool multicastMode;

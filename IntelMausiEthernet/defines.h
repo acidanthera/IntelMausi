@@ -8,6 +8,10 @@
 #define REQ_TX_DESCRIPTOR_MULTIPLE  8
 #define REQ_RX_DESCRIPTOR_MULTIPLE  8
 
+#define DMA_BIT_MASK(n)    (((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
+
+#define DMA_MASK_NONE    0x0ULL
+
 /* Definitions for power management and wakeup registers */
 /* Wake Up Control */
 #define E1000_WUC_APME        0x00000001    /* APM Enable */

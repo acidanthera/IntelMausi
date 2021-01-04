@@ -28,7 +28,7 @@ extern "C" {
 #include <sys/appleapiopts.h>
 #include <sys/errno.h>
 #include <sys/kpi_mbuf.h>
-    
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

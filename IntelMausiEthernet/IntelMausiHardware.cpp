@@ -18,7 +18,7 @@
  * This driver is based on Intel's E1000e driver for Linux.
  */
 
-#include <libkern/crypto/rand.h>
+#include <sys/random.h>
 #include "IntelMausiEthernet.h"
 
 #pragma mark --- hardware initialization methods ---
@@ -1332,7 +1332,7 @@ void IntelMausi::intelRssKeyFill(void *buffer, size_t len)
     if (isRssSet) {
         memcpy(buffer, rssHashKey, len);
     } else {
-        random_buf(rssHashKey, sizeof(rssHashKey));
+        read_random(rssHashKey, sizeof(rssHashKey));
         memcpy(buffer, rssHashKey, len);
         isRssSet = true;
     }

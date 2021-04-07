@@ -1,5 +1,8 @@
 IntelMausi Changelog
 ====================
+#### v1.0.6
+- Fixed loading on 10.11 and earlier (regressed in 1.0.5)
+
 #### v1.0.5
 - Merged changes from 2.5.3d1
 - Updated e1000e sources from Linux upstream branch

@@ -87,7 +87,6 @@
 		D3CB5B7D1A4394A800A37FAA /* IntelMausiEthernet-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "IntelMausiEthernet-Info.plist"; sourceTree = "<group>"; };
 		D3CB5B811A4394A800A37FAA /* IntelMausiEthernet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IntelMausiEthernet.h; sourceTree = "<group>"; };
 		D3CB5B821A4394A800A37FAA /* IntelMausiEthernet.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IntelMausiEthernet.cpp; sourceTree = "<group>"; };
-		D3CB5B8A1A4395E400A37FAA /* gpl.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = gpl.txt; sourceTree = "<group>"; };
 		D3CB5B8D1A43969400A37FAA /* linux.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = linux.h; sourceTree = "<group>"; };
 		D3CB5B8E1A43969400A37FAA /* ethtool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ethtool.h; sourceTree = "<group>"; };
 		D3CB5B8F1A43969400A37FAA /* if_ether.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = if_ether.h; sourceTree = "<group>"; };
@@ -194,7 +193,6 @@
 				D31D52061A566F4800DD1F17 /* IntelMausiHardware.cpp */,
 				D36B90D51C41BF0B00C1EB37 /* Intel E1000e */,
 				D3CB5B8C1A43968000A37FAA /* Linux Compatibility */,
-				D3CB5B8A1A4395E400A37FAA /* gpl.txt */,
 				D3F318C81AB3B58A00DA9D9A /* APPLE_LICENSE */,
 				D3CB5B7C1A4394A800A37FAA /* Supporting Files */,
 			);
@@ -314,7 +312,7 @@
 		D3CB5B6C1A4394A800A37FAA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1220;
+				LastUpgradeCheck = 1240;
 				ORGANIZATIONNAME = "Laura Müller";
 			};
 			buildConfigurationList = D3CB5B6F1A4394A800A37FAA /* Build configuration list for PBXProject "IntelMausiEthernet" */;
@@ -473,7 +471,6 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
-				MODULE_VERSION = 1.0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -501,7 +498,6 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
-				MODULE_VERSION = 1.0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -562,6 +558,7 @@
 				KERNEL_EXTENSION_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
 				KERNEL_FRAMEWORK_HEADERS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MODULE_VERSION = 1.0.6;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "-Wno-stdlibcxx-not-found";
 				SDKROOT = macosx;
@@ -615,6 +612,7 @@
 				KERNEL_EXTENSION_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
 				KERNEL_FRAMEWORK_HEADERS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MODULE_VERSION = 1.0.6;
 				OTHER_CFLAGS = "-Wno-stdlibcxx-not-found";
 				SDKROOT = macosx;
 			};
@@ -640,7 +638,6 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
-				MODULE_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = IntelMausi;
 				SDKROOT = macosx;
@@ -668,7 +665,6 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MODULE_NAME = as.acidanthera.mieze.IntelMausi;
-				MODULE_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "as.acidanthera.mieze.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = IntelMausi;
 				SDKROOT = macosx;

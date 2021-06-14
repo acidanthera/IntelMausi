@@ -253,7 +253,16 @@ void IntelMausi::free()
 
 bool IntelMausi::start(IOService *provider)
 {
+    int tmp = 0;
     bool result;
+
+    if (!PE_parse_boot_argn("-mausiwol", &tmp, sizeof(tmp))) {
+        tmp = provider->getProperty("mausi-force-wol") != nullptr;
+    }
+
+    if (tmp != 0) {
+        wolCapable = wolActive = true;
+    }
 
     result = super::start(provider);
 

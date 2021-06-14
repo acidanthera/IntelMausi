@@ -9,6 +9,8 @@ as well as kernel debugging support initially provided by [aerror2](https://gith
 [IntelMausiEthernetWithKernelDebugger](https://github.com/aerror2/IntelMausiEthernetWithKernelDebugger)
 repository. Do use the original version when uncertain. No support or troubleshooting provided.
 
+Wake on LAN functionality should work out of the box. On misconfigured hardware one may try to force-enable it by injecting `mausi-force-wol` device property (with any value, recommended), or `-mausiwol` boot argument (for testing purposes).
+
 ---
 
 A few days before Christmas I started my latest project, a new driver for recent Intel onboard LAN controllers. My intention was not to replace hnak's AppleIntelE1000e.kext completely but to deliver best performance and stability on recent hardware. That's why I dropped support for a number of older NICs. Currently the driver supports:

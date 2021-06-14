@@ -1,5 +1,8 @@
 IntelMausi Changelog
 ====================
+#### v1.0.7
+- Added force WOL support (`mausi-force-wol` device property or `-mausiwol` boot argument)
+
 #### v1.0.6
 - Fixed loading on 10.11 and earlier (regressed in 1.0.5)
 

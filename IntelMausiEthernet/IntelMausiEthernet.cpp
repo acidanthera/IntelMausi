@@ -513,6 +513,7 @@ void IntelMausi::kdpStartup()
             IOLog("[IntelMausi]: cannot allocate kdp pool(%d)\n", i);
             while (i > 0) {
                 freePacket(kdpBufArray[i - 1]);
+                i--;
             }
             return;
         }

@@ -1,5 +1,8 @@
 IntelMausi Changelog
 ====================
+#### v1.0.8
+- Minor fixes found by static analysis
+
 #### v1.0.7
 - Added force WOL support (`mausi-force-wol` device property or `-mausiwol` boot argument)
 
